@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>パスタのマルコ | 大洗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Noto+Serif+JP:wght@200;300;400&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════
+   RESET & ROOT
+═══════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --white:     #ffffff;
+  --off:       #f7f4ef;
+  --cream:     #ece7dd;
+  --ink:       #18161300;
+  --ink-solid: #181613;
+  --soft:      rgba(255,255,255,.55);
+  --softer:    rgba(255,255,255,.32);
+  --olive:     #5c6b2e;
+  --olive-lt:  #8fa440;
+  --gold:      #b09a5a;
+  --sea:       #172736;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  background: #0e1a22;
+  color: var(--white);
+  overflow: hidden;        /* セクション切替のため */
+  cursor: none;
+}
+@media (max-width: 768px) {
+  body { cursor: auto; overflow: auto; }
+}
+
+/* ═══════════════════════════════
+   CURSOR
+═══════════════════════════════ */
+.cur {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9000;
+  transform: translate(-50%,-50%);
+}
+#cur-dot {
+  width: 6px; height: 6px;
+  background: #fff;
+  mix-blend-mode: difference;
+  transition: width .2s, height .2s;
+}
+#cur-ring {
+  width: 38px; height: 38px;
+  border: 1px solid rgba(255,255,255,.3);
+  transition: left .15s cubic-bezier(.23,1,.32,1),
+              top  .15s cubic-bezier(.23,1,.32,1),
+              width .3s, height .3s;
+}
+@media (max-width:768px) { .cur { display:none; } }
+
+/* ═══════════════════════════════
+   NAV
+═══════════════════════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 800;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 52px;
+  transition: background .4s, padding .3s;
+}
+.nav.bg {
+  background: rgba(14,26,34,.88);
+  backdrop-filter: blur(14px);
+  padding: 18px 52px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.nav-logo {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: .28em;
+  color: var(--white);
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.nav-links {
+  display: flex; align-items: center;
+  gap: 32px; list-style: none;
+}
+.nav-links a {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--soft);
+  text-decoration: none;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-btn {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: var(--white) !important;
+  border: 1px solid rgba(255,255,255,.38);
+  padding: 10px 24px;
+  transition: background .2s, border-color .2s !important;
+  opacity: 1 !important;
+}
+.nav-btn:hover { background: rgba(255,255,255,.1) !important; }
+
+.hamb {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none; border: none;
+  cursor: none; padding: 4px;
+}
+.hamb span { display: block; width: 22px; height: 1px; background: #fff; transition: all .3s; }
+.hamb.open span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
+.hamb.open span:nth-child(2) { opacity: 0; }
+.hamb.open span:nth-child(3) { transform: rotate(-45deg) translate(4px,-4px); }
+
+/* ═══════════════════════════════
+   MOBILE DRAWER
+═══════════════════════════════ */
+.dmask {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 790; opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.dmask.open { opacity: 1; pointer-events: all; }
+.drawer {
+  position: fixed;
+  top: 0; right: -100%;
+  width: min(300px, 80vw); height: 100dvh;
+  background: var(--sea);
+  z-index: 795;
+  display: flex; flex-direction: column;
+  justify-content: center; padding: 0 44px;
+  transition: right .5s cubic-bezier(.76,0,.24,1);
+}
+.drawer.open { right: 0; }
+.drawer a {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400; font-size: 11px;
+  letter-spacing: .38em; text-transform: uppercase;
+  color: var(--soft); text-decoration: none;
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  transition: color .2s;
+}
+.drawer a:hover { color: var(--white); }
+
+/* ═══════════════════════════════
+   SECTION DOTS
+═══════════════════════════════ */
+.dots {
+  position: fixed;
+  right: 28px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 10px;
+  z-index: 700;
+}
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  cursor: none;
+  transition: background .3s, transform .3s;
+  position: relative;
+}
+.dot.on { background: var(--white); transform: scale(1.6); }
+.dot-tip {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--soft); white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.dot:hover .dot-tip, .dot.on .dot-tip { opacity: 1; }
+@media (max-width:768px) { .dots { display: none; } }
+
+/* ═══════════════════════════════
+   PAGE SECTIONS
+═══════════════════════════════ */
+.pg {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.pg.active {
+  display: flex;
+}
+/* 入退場アニメ */
+.pg.enter { animation: pgIn .75s cubic-bezier(.16,1,.3,1) forwards; }
+.pg.leave { animation: pgOut .5s cubic-bezier(.76,0,.24,1) forwards; }
+@keyframes pgIn  { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:none; } }
+@keyframes pgOut { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(-18px); } }
+
+/* ── 背景画像 ── */
+.pg-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  transition: transform 12s ease-out;
+  transform: scale(1.04);
+}
+.pg.active .pg-bg { transform: scale(1); }
+
+/* ── 各セクション背景 ── */
+/* Unsplash フリー素材 — 自前写真に差し替える場合はURLを変更してください */
+#pg-home     .pg-bg { background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1800&q=80'); background-position: center 55%; }
+#pg-story    .pg-bg { background-image: url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1800&q=80'); background-position: center 45%; }
+#pg-facility .pg-bg { background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1800&q=80'); background-position: center 50%; }
+#pg-menu     .pg-bg { background-image: url('https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=1800&q=80'); background-position: center 40%; }
+#pg-access   .pg-bg { background-image: url('https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1800&q=80'); background-position: center 60%; }
+/* 予約・採用は白背景 */
+#pg-reservation { background: var(--off); }
+#pg-recruit     { background: var(--ink-solid); }
+
+/* ── 共通オーバーレイ ── */
+.pg-ov {
+  position: absolute; inset: 0;
+}
+/* 写真セクション：グラデーションオーバーレイ */
+.dark-ov {
+  background: linear-gradient(
+    160deg,
+    rgba(10,18,24,.78) 0%,
+    rgba(10,18,24,.42) 50%,
+    rgba(10,18,24,.68) 100%
+  );
+}
+
+/* ── コンテンツ ── */
+.pg-body {
+  position: relative; z-index: 2;
+  flex: 1; display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 110px 52px 80px;
+  max-width: 760px;
+}
+.pg-body.wide { max-width: 100%; }
+
+/* ─────────────────────
+   HOME
+───────────────────── */
+.h-label {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400; font-size: 10px;
+  letter-spacing: .6em; text-transform: uppercase;
+  color: var(--softer); margin-bottom: 40px;
+  opacity: 0; animation: ri 1s .2s forwards;
+}
+.h-title {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6.5vw, 88px);
+  line-height: 1.18;
+  letter-spacing: .04em;
+  color: var(--white);
+  margin-bottom: 36px;
+  opacity: 0; animation: ri 1.2s .4s forwards;
+}
+.h-title em {
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1em;
+  color: #c8d89a;
+  font-weight: 300;
+}
+.h-sub {
+  font-size: 14px; line-height: 2.3;
+  color: var(--soft); max-width: 380px;
+  margin-bottom: 56px;
+  opacity: 0; animation: ri 1s .7s forwards;
+}
+.h-cta {
+  display: inline-flex; align-items: center; gap: 16px;
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 400; font-size: 10px;
+  letter-spacing: .45em; text-transform: uppercase;
+  color: var(--white); text-decoration: none;
+  opacity: 0; animation: ri .9s 1s forwards;
+  transition: gap .3s;
+}
+.h-cta::after {
+  content: ''; display: block;
+  width: 44px; height: 1px; background: var(--white);
+  transition: width .3s;
+}
+.h-cta:hover { gap: 26px; }
+.h-cta:hover::after { width: 64px; }
+
+/* 右下情報 */
+.h-info {
+  position: absolute; bottom: 52px; right: 52px;
+  z-index: 2; text-align: right;
+  opacity: 0; animation: ri .9s 1.3s forwards;
+}
+.h-info-lbl {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .5em;
+  text-transform: uppercase;
+  color: var(--softer); margin-bottom: 5px;
+}
+.h-info-val {
+  font-size: 12px; color: var(--soft);
+  letter-spacing: .06em; line-height: 2;
+}
+
+/* スクロールヒント */
+.scroll-hint {
+  position: absolute; bottom: 52px; left: 52px;
+  z-index: 2; display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  opacity: 0; animation: ri .8s 1.6s forwards;
+}
+.scroll-hint-line {
+  width: 1px; height: 52px;
+  background: rgba(255,255,255,.18); position: relative; overflow: hidden;
+}
+.scroll-hint-line::after {
+  content: ''; position: absolute; top: -100%; left: 0;
+  width: 1px; height: 100%; background: rgba(255,255,255,.7);
+  animation: scanLine 2s 2s infinite;
+}
+.scroll-hint span {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .5em;
+  text-transform: uppercase; color: rgba(255,255,255,.25);
+  writing-mode: vertical-rl;
+}
+
+/* ─────────────────────
+   共通 SECTION スタイル
+───────────────────── */
+.sec-label {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .6em; text-transform: uppercase;
+  margin-bottom: 28px; display: block;
+}
+.sec-label-light { color: var(--softer); }
+.sec-label-dark  { color: rgba(26,22,19,.3); }
+.sec-label-olive { color: var(--olive-lt); }
+
+.sec-h {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300;
+  font-size: clamp(26px, 3.8vw, 50px);
+  line-height: 1.35; letter-spacing: -.01em;
+  margin-bottom: 32px;
+}
+.sec-h-light { color: var(--white); }
+.sec-h-dark  { color: var(--ink-solid); }
+
+.sec-rule { width: 40px; height: 1px; margin-bottom: 32px; }
+.sec-rule-light { background: rgba(255,255,255,.25); }
+.sec-rule-dark  { background: rgba(26,22,19,.2); }
+
+.sec-p {
+  font-size: 13.5px; line-height: 2.3;
+  max-width: 540px;
+}
+.sec-p-light { color: var(--soft); }
+.sec-p-dark  { color: rgba(26,22,19,.6); }
+.sec-p + .sec-p { margin-top: 20px; }
+
+/* ─────────────────────
+   STORY
+───────────────────── */
+.story-quote {
+  margin-top: 40px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 18px;
+  color: #c8d89a; line-height: 2;
+  letter-spacing: .04em;
+}
+
+/* ─────────────────────
+   FACILITY
+───────────────────── */
+.seats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 0;
+  margin-top: 48px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.seat {
+  padding: 32px 0 32px 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  padding-right: 36px;
+}
+.seat:nth-child(2) { padding-left: 36px; padding-right: 36px; border-left: 1px solid rgba(255,255,255,.12); border-right: 1px solid rgba(255,255,255,.12); }
+.seat:nth-child(3) { padding-left: 36px; }
+.seat-en {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .45em; text-transform: uppercase;
+  color: var(--olive-lt); margin-bottom: 10px;
+}
+.seat-jp { font-size: 14px; color: var(--white); margin-bottom: 12px; letter-spacing: .04em; }
+.seat-body { font-size: 12.5px; line-height: 2.1; color: var(--soft); }
+
+.ftags { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 8px; }
+.ftag {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 10px;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+  border: 1px solid rgba(255,255,255,.2);
+  padding: 6px 16px;
+  transition: all .2s;
+}
+.ftag:hover { color: var(--white); border-color: rgba(255,255,255,.5); }
+
+/* ─────────────────────
+   MENU（白背景）
+───────────────────── */
+#pg-menu .pg-ov {
+  background: linear-gradient(
+    to right,
+    rgba(10,18,24,.86) 0%,
+    rgba(10,18,24,.55) 50%,
+    rgba(10,18,24,.22) 100%
+  );
+}
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 40px;
+  border: 1px solid rgba(255,255,255,.1);
+}
+.menu-card {
+  padding: 36px 32px;
+  border-right: 1px solid rgba(255,255,255,.1);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  transition: background .25s;
+}
+.menu-card:hover { background: rgba(255,255,255,.04); }
+.menu-card:nth-child(even) { border-right: none; }
+.menu-cat {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .45em; text-transform: uppercase;
+  color: var(--olive-lt); margin-bottom: 12px;
+}
+.menu-name { font-size: 15px; color: var(--white); margin-bottom: 10px; letter-spacing: .03em; }
+.menu-desc { font-size: 12.5px; line-height: 2; color: var(--soft); }
+.menu-price {
+  margin-top: 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 22px; color: var(--gold);
+}
+
+/* ─────────────────────
+   ACCESS
+───────────────────── */
+.access-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px; margin-top: 40px;
+}
+.access-dl { display: flex; flex-direction: column; gap: 22px; }
+.access-dl dt {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .5em; text-transform: uppercase;
+  color: var(--softer); margin-bottom: 3px;
+}
+.access-dl dd { font-size: 13px; color: var(--soft); line-height: 1.9; }
+.access-dl a { color: rgba(255,255,255,.45); }
+.map-wrap {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  filter: saturate(.3) brightness(.65);
+}
+.map-wrap iframe { width: 100%; height: 100%; border: none; }
+
+/* ─────────────────────
+   RESERVATION（オフホワイト）
+───────────────────── */
+#pg-reservation .pg-body { max-width: 100%; padding: 110px 52px 80px; }
+.res-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 80px;
+  align-items: start;
+}
+.res-intro h2 {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300;
+  font-size: clamp(24px,3.2vw,42px);
+  line-height: 1.35; letter-spacing: -.01em;
+  color: var(--ink-solid); margin-bottom: 24px;
+}
+.res-intro p { font-size: 13px; line-height: 2.2; color: rgba(26,22,19,.55); }
+.res-note {
+  margin-top: 24px; padding: 20px 24px;
+  border-left: 2px solid var(--olive);
+  background: var(--cream);
+  font-size: 12px; line-height: 2; color: rgba(26,22,19,.5);
+}
+.res-note a { color: var(--olive); }
+
+/* フォーム */
+.rform { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+.rf { display: flex; flex-direction: column; gap: 7px; }
+.rf.full { grid-column: 1/-1; }
+.rl {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .48em; text-transform: uppercase;
+  color: rgba(26,22,19,.32);
+}
+.rl em { color: #b05050; font-style: normal; margin-left: 5px; }
+.ri, .rs, .rt {
+  background: var(--white);
+  border: 1px solid var(--cream);
+  padding: 12px 15px;
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300; font-size: 14px;
+  color: var(--ink-solid); outline: none;
+  transition: border-color .2s;
+  -webkit-appearance: none; border-radius: 0;
+}
+.ri::placeholder, .rt::placeholder { color: rgba(26,22,19,.2); }
+.ri:focus, .rs:focus, .rt:focus { border-color: var(--olive); }
+.rt { resize: none; height: 72px; }
+
+.topts { display: flex; flex-direction: column; }
+.topt {
+  display: flex; align-items: center; gap: 16px;
+  padding: 13px 15px;
+  border: 1px solid var(--cream); border-top: none;
+  background: var(--white);
+  cursor: none; transition: background .2s;
+}
+.topt:first-child { border-top: 1px solid var(--cream); }
+.topt:has(input:checked) { background: #eef2e4; border-color: #b8cc80; }
+.topt input { display: none; }
+.tdot {
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1px solid rgba(26,22,19,.2); flex-shrink: 0;
+  transition: all .2s;
+}
+.topt:has(input:checked) .tdot {
+  background: var(--olive); border-color: var(--olive);
+  box-shadow: 0 0 0 3px rgba(92,107,46,.15);
+}
+.ttext { font-size: 13px; color: var(--ink-solid); flex: 1; }
+.tbadge {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+  padding: 3px 10px; border: 1px solid;
+}
+.tb-open   { color: var(--olive);  border-color: #b8cc80; }
+.tb-few    { color: #8a6a20;       border-color: #c8aa60; }
+.tb-full   { color: #904040;       border-color: #d09090; }
+.tb-closed { color: rgba(26,22,19,.3); border-color: var(--cream); }
+.tb-load   { color: rgba(26,22,19,.3); border-color: var(--cream); animation: pulse 1.5s infinite; }
+
+.r-submit {
+  grid-column: 1/-1; margin-top: 8px;
+  padding: 16px; background: var(--ink-solid); border: none;
+  font-family: 'Tenor Sans', sans-serif; font-weight: 300;
+  font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--white); cursor: none; transition: background .25s;
+}
+.r-submit:hover { background: var(--sea); }
+.r-submit:disabled { opacity: .4; }
+.r-msg {
+  grid-column: 1/-1; text-align: center;
+  font-size: 12px; letter-spacing: .08em;
+  color: rgba(26,22,19,.35); min-height: 18px;
+}
+.r-msg.ok { color: var(--olive); }
+.r-msg.ng { color: #904040; }
+
+/* ─────────────────────
+   RECRUIT
+───────────────────── */
+#pg-recruit .pg-body { color: var(--white); }
+.r-cards {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,.08);
+  margin-top: 40px;
+}
+.r-card {
+  padding: 48px 40px;
+  border-right: 1px solid rgba(255,255,255,.08);
+}
+.r-card:last-of-type { border-right: none; }
+.r-card-type {
+  font-family: 'Tenor Sans', sans-serif;
+  font-weight: 300; font-size: 9px;
+  letter-spacing: .55em; text-transform: uppercase;
+  color: var(--olive-lt); margin-bottom: 28px;
+}
+.r-card dl { display: flex; flex-direction: column; gap: 16px; }
+.r-card dt {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .45em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.25); margin-bottom: 2px;
+}
+.r-card dd { font-size: 13px; color: rgba(255,255,255,.6); line-height: 1.9; }
+.r-contact {
+  margin-top: 0;
+  padding: 32px 40px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-size: 12.5px; color: rgba(255,255,255,.35);
+  line-height: 2.2;
+}
+.r-contact a { color: rgba(255,255,255,.5); }
+
+/* ─────────────────────
+   FOOTER（最終セクション下部）
+───────────────────── */
+.pg-footer {
+  position: relative; z-index: 2;
+  padding: 24px 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.pf-links { display: flex; gap: 28px; }
+.pf-links a {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 10px; letter-spacing: .25em; text-transform: uppercase;
+  color: rgba(255,255,255,.25); text-decoration: none;
+  transition: color .2s;
+}
+.pf-links a:hover { color: rgba(255,255,255,.6); }
+.pf-copy {
+  font-family: 'Tenor Sans', sans-serif;
+  font-size: 9px; letter-spacing: .3em;
+  color: rgba(255,255,255,.15);
+}
+
+/* 白セクション用フッター */
+.pg-footer-light {
+  border-top: 1px solid var(--cream);
+}
+.pg-footer-light .pf-links a { color: rgba(26,22,19,.25); }
+.pg-footer-light .pf-links a:hover { color: rgba(26,22,19,.6); }
+.pg-footer-light .pf-copy { color: rgba(26,22,19,.18); }
+
+/* ═══════════════════════════════
+   REVEAL アニメ
+═══════════════════════════════ */
+.rv {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .8s cubic-bezier(.16,1,.3,1),
+              transform .8s cubic-bezier(.16,1,.3,1);
+}
+.rv.in { opacity: 1; transform: none; }
+.rv.d1 { transition-delay: .1s; }
+.rv.d2 { transition-delay: .2s; }
+.rv.d3 { transition-delay: .3s; }
+.rv.d4 { transition-delay: .4s; }
+.rv.d5 { transition-delay: .5s; }
+
+@keyframes ri {
+  from { opacity:0; transform:translateY(18px); }
+  to   { opacity:1; transform:none; }
+}
+@keyframes scanLine {
+  0% { top:-100%; } 100% { top:200%; }
+}
+@keyframes pulse {
+  0%,100% { opacity:.5; } 50% { opacity:.15; }
+}
+
+/* ═══════════════════════════════
+   RESPONSIVE
+═══════════════════════════════ */
+@media (max-width: 900px) {
+  .nav { padding: 18px 24px; }
+  .nav.bg { padding: 14px 24px; }
+  .nav-links { display: none; }
+  .hamb { display: flex; }
+  .pg { position: relative; min-height: 100dvh; }
+  .pg-body { padding: 90px 24px 64px; }
+  #pg-reservation .pg-body { padding: 90px 24px 64px; }
+  .seats { grid-template-columns: 1fr; }
+  .seat:nth-child(2) { border-left: none; border-right: none; padding-left: 0; padding-right: 0; }
+  .seat:nth-child(3) { padding-left: 0; }
+  .menu-grid { grid-template-columns: 1fr; }
+  .menu-card:nth-child(even) { border-right: 1px solid rgba(255,255,255,.1); }
+  .access-grid { grid-template-columns: 1fr; gap: 36px; }
+  .res-layout { grid-template-columns: 1fr; gap: 36px; }
+  .rform { grid-template-columns: 1fr; }
+  .r-cards { grid-template-columns: 1fr; }
+  .r-card { border-right: none; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .h-info { bottom: 24px; right: 24px; }
+  .scroll-hint { left: 24px; bottom: 24px; }
+  .pg-footer { flex-direction: column; gap: 12px; text-align: center; padding: 20px 24px; }
+  body { overflow: auto; }
+  .pg { position: relative; display: none; flex-direction: column; }
+  .pg.active { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur-dot"></div>
+<div class="cur" id="cur-ring"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a class="nav-logo" href="#" data-to="home">Pasta Marco</a>
+  <ul class="nav-links">
+    <li><a href="#" data-to="story">Story</a></li>
+    <li><a href="#" data-to="facility">Facility</a></li>
+    <li><a href="#" data-to="menu">Menu</a></li>
+    <li><a href="#" data-to="access">Access</a></li>
+    <li><a href="#" data-to="recruit">Recruit</a></li>
+    <li><a href="#" data-to="reservation" class="nav-btn">Reservation</a></li>
+  </ul>
+  <button class="hamb" id="hamb"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- DRAWER -->
+<div class="dmask" id="dmask"></div>
+<div class="drawer" id="drawer">
+  <a href="#" data-to="home" class="da">Home</a>
+  <a href="#" data-to="story" class="da">Story</a>
+  <a href="#" data-to="facility" class="da">Facility</a>
+  <a href="#" data-to="menu" class="da">Menu</a>
+  <a href="#" data-to="access" class="da">Access</a>
+  <a href="#" data-to="reservation" class="da">Reservation</a>
+  <a href="#" data-to="recruit" class="da">Recruit</a>
+</div>
+
+<!-- DOTS -->
+<div class="dots" id="dots">
+  <div class="dot on" data-to="home"><span class="dot-tip">Home</span></div>
+  <div class="dot" data-to="story"><span class="dot-tip">Story</span></div>
+  <div class="dot" data-to="facility"><span class="dot-tip">Facility</span></div>
+  <div class="dot" data-to="menu"><span class="dot-tip">Menu</span></div>
+  <div class="dot" data-to="access"><span class="dot-tip">Access</span></div>
+  <div class="dot" data-to="reservation"><span class="dot-tip">Reservation</span></div>
+  <div class="dot" data-to="recruit"><span class="dot-tip">Recruit</span></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     HOME
+══════════════════════════════════════════ -->
+<div class="pg active" id="pg-home">
+  <div class="pg-bg"></div>
+  <div class="pg-ov dark-ov"></div>
+
+  <div class="pg-body">
+    <p class="h-label">Pasta Marco — Oarai, Ibaraki</p>
+    <h1 class="h-title">
+      海のそばで、<br>
+      <em>静かに待つ</em><br>
+      一枚の皿。
+    </h1>
+    <p class="h-sub">大洗漁港のすぐそばに、<br>小さなパスタ屋があります。</p>
+    <a href="#" class="h-cta" data-to="reservation">ご予約はこちら</a>
+  </div>
+
+  <div class="h-info">
+    <p class="h-info-lbl">Hours</p>
+    <p class="h-info-val">11:00 — 16:00<br>L.O. 15:30</p>
+    <p class="h-info-lbl" style="margin-top:12px;">Closed</p>
+    <p class="h-info-val">毎週木曜日</p>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    <span>Scroll</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STORY
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-story">
+  <div class="pg-bg"></div>
+  <div class="pg-ov dark-ov"></div>
+  <div class="pg-body">
+    <span class="sec-label sec-label-light rv">Story</span>
+    <h2 class="sec-h sec-h-light rv d1">海と魚に向き合ってきた<br>店がつくる、パスタ。</h2>
+    <div class="sec-rule sec-rule-light rv d2"></div>
+    <p class="sec-p sec-p-light rv d2">大洗町で長年、地魚と向き合ってきた和食店「えんやどっと丸」の姉妹店として生まれました。毎日仕入れる魚介の目利きと下処理は、本店譲り。</p>
+    <p class="sec-p sec-p-light rv d3">その素材を、イタリア料理の技法でまっすぐにパスタへ落とし込みます。ソースはすべて店内仕込み。生パスタは、もちっとした食感を大切に。</p>
+    <p class="story-quote rv d4">「港のように人が集い、また帰ってくる店。」</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FACILITY
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-facility">
+  <div class="pg-bg"></div>
+  <div class="pg-ov dark-ov"></div>
+  <div class="pg-body wide">
+    <div style="max-width:720px; padding: 110px 52px 0;">
+      <span class="sec-label sec-label-light rv">Facility</span>
+      <h2 class="sec-h sec-h-light rv d1">それぞれの時間に<br>寄り添う空間。</h2>
+      <div class="sec-rule sec-rule-light rv d2"></div>
+      <p class="sec-p sec-p-light rv d2">カウンター席、テーブル席、そしてテラス席。どの席にも共通しているのは、居心地の良さと、ていねいに整えられた空間です。</p>
+    </div>
+    <div style="padding: 0 52px 52px;">
+      <div class="seats rv d3">
+        <div class="seat">
+          <p class="seat-en">Counter</p>
+          <p class="seat-jp">カウンター席</p>
+          <p class="seat-body">おひとりでも気軽に。キッチンの空気感を感じながら、静かにパスタと向き合う時間をお楽しみください。</p>
+        </div>
+        <div class="seat">
+          <p class="seat-en">Table</p>
+          <p class="seat-jp">テーブル席</p>
+          <p class="seat-body">ご友人やご家族との食事にぴったり。会話を楽しみながら、ゆったりとお過ごしいただけます。</p>
+        </div>
+        <div class="seat">
+          <p class="seat-en">Terrace</p>
+          <p class="seat-jp">テラス席</p>
+          <p class="seat-body">外の空気を感じながら開放的な気分でお食事を。ペット同伴でのご利用も可能です。</p>
+        </div>
+      </div>
+      <div class="ftags rv d4">
+        <span class="ftag">テラス席</span>
+        <span class="ftag">ペット同伴可</span>
+        <span class="ftag">バリアフリー</span>
+        <span class="ftag">無料駐車場</span>
+        <span class="ftag">お子様連れ歓迎</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MENU
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-menu">
+  <div class="pg-bg"></div>
+  <div class="pg-ov"></div>
+  <div class="pg-body wide" style="padding: 110px 52px 52px;">
+    <span class="sec-label sec-label-light rv">Menu</span>
+    <h2 class="sec-h sec-h-light rv d1">この町の恵みを<br>パスタに込めて。</h2>
+    <div class="sec-rule sec-rule-light rv d1"></div>
+    <p class="sec-p sec-p-light rv d2" style="max-width:520px; margin-bottom:0;">魚介も野菜も、できる限り地元のものを使い、その日その時の「いちばん美味しい」を届けたい。</p>
+    <div class="menu-grid rv d3">
+      <div class="menu-card">
+        <p class="menu-cat">Daily Pasta Set</p>
+        <p class="menu-name">日替わりパスタセット</p>
+        <p class="menu-desc">サラダバー＆ドリンクバー付。その日ごとに変わる一皿を特別価格で。</p>
+        <p class="menu-price">¥980 <span style="font-family:'Tenor Sans',sans-serif; font-style:normal; font-size:11px; color:rgba(255,255,255,.3); letter-spacing:.2em;">大洗町民限定</span></p>
+      </div>
+      <div class="menu-card">
+        <p class="menu-cat">Salad Bar</p>
+        <p class="menu-name">サラダバー</p>
+        <p class="menu-desc">大洗・茨城の地元野菜を中心に。自家製の特製ドレッシング。</p>
+        <p class="menu-price">食べ放題 ¥580 <span style="font-size:16px;">/ ワンストップ ¥280</span></p>
+      </div>
+      <div class="menu-card">
+        <p class="menu-cat">Drink Bar</p>
+        <p class="menu-name">ドリンクバー</p>
+        <p class="menu-desc">淹れたてコーヒー・紅茶・ハーブティーなど。</p>
+        <p class="menu-price">飲み放題 ¥380 <span style="font-size:16px;">/ ワンストップ ¥180</span></p>
+      </div>
+      <div class="menu-card" style="display:flex; align-items:center; justify-content:center;">
+        <p style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:16px; color:rgba(255,255,255,.22); line-height:2; text-align:center;">"シンプルだけど、<br>ごまかしのきかない料理。"</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ACCESS
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-access">
+  <div class="pg-bg"></div>
+  <div class="pg-ov dark-ov"></div>
+  <div class="pg-body wide" style="padding: 110px 52px 52px;">
+    <span class="sec-label sec-label-light rv">Access</span>
+    <h2 class="sec-h sec-h-light rv d1">初めての方も安心。<br>お店までのご案内。</h2>
+    <div class="sec-rule sec-rule-light rv d2"></div>
+    <div class="access-grid rv d2">
+      <dl class="access-dl">
+        <div><dt>Shop</dt><dd>パスタのマルコ</dd></div>
+        <div><dt>Address</dt><dd>茨城県東茨城郡大洗町<br>（大洗漁港すぐそば）</dd></div>
+        <div><dt>Hours</dt><dd>11:00 — 16:00　L.O. 15:30</dd></div>
+        <div><dt>Closed</dt><dd>毎週木曜日</dd></div>
+        <div><dt>Train</dt><dd>鹿島臨海鉄道「大洗駅」より徒歩約15分</dd></div>
+        <div><dt>Parking</dt><dd>大洗漁港周辺の無料駐車場</dd></div>
+        <div><dt>Contact</dt><dd><a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a></dd></div>
+      </dl>
+      <div class="map-wrap">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3220!2d140.5775!3d36.3096!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDE4JzM0LjYiTiAxNDDCsDM0JzM5LjAiRQ!5e0!3m2!1sja!2sjp!4v1" allowfullscreen="" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RESERVATION
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-reservation">
+  <div class="pg-body">
+    <div class="res-layout">
+      <div class="res-intro rv">
+        <span class="sec-label sec-label-dark" style="margin-bottom:20px; display:block;">Reservation</span>
+        <h2>ご予約はこちらから<br>どうぞ。</h2>
+        <p style="margin-top:20px;">えんやどっと丸の姉妹店として、地元大洗の魚介を活かしたパスタをご提供しています。</p>
+        <div class="res-note">
+          当日予約は午前10:30まで受付（自動確定）<br>
+          キャンセルは <a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a> まで
+        </div>
+      </div>
+      <div class="rform rv d2" id="resForm">
+        <div class="rf"><label class="rl">氏名<em>必須</em></label><input type="text" class="ri" id="rName" placeholder="山田 太郎"></div>
+        <div class="rf"><label class="rl">電話<em>必須</em></label><input type="tel" class="ri" id="rPhone" placeholder="090-0000-0000"></div>
+        <div class="rf"><label class="rl">メール<em>必須</em></label><input type="email" class="ri" id="rEmail" placeholder="example@mail.com"></div>
+        <div class="rf"><label class="rl">予約日<em>必須</em></label><input type="date" class="ri" id="rDate"></div>
+        <div class="rf full">
+          <label class="rl">予約時間<em>必須</em></label>
+          <div class="topts">
+            <label class="topt"><input type="radio" name="rt" value="11:00〜12:30　枠1"><span class="tdot"></span><span class="ttext">11:00 — 12:30　枠 1</span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
+            <label class="topt"><input type="radio" name="rt" value="13:00〜14:30　枠2"><span class="tdot"></span><span class="ttext">13:00 — 14:30　枠 2</span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
+            <label class="topt"><input type="radio" name="rt" value="15:00〜16:00　枠3"><span class="tdot"></span><span class="ttext">15:00 — 16:00　枠 3</span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
+          </div>
+        </div>
+        <div class="rf"><label class="rl">人数<em>必須</em></label>
+          <select class="rs" id="rGuests"><option value="">— 選択 —</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名以上</option></select>
+        </div>
+        <div class="rf"><label class="rl">備考</label><textarea class="rt" id="rNotes" placeholder="アレルギー / 席の希望など"></textarea></div>
+        <button class="r-submit" id="rSubmit">予約を送信する（自動確定）</button>
+        <p class="r-msg" id="rMsg"></p>
+      </div>
+    </div>
+  </div>
+  <div class="pg-footer pg-footer-light">
+    <div class="pf-links">
+      <a href="https://www.enya-otd.com/" target="_blank">えんやどっと丸</a>
+      <a href="https://epwds0626-oss.github.io/fish-hack/" target="_blank">Fish Hack</a>
+      <a href="https://epwds0626-oss.github.io/onetable-design/" target="_blank">One Table Design</a>
+    </div>
+    <p class="pf-copy">© 2025 Pasta Marco / One Table Design Inc.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RECRUIT
+══════════════════════════════════════════ -->
+<div class="pg" id="pg-recruit">
+  <div class="pg-body wide" style="padding: 110px 52px 0;">
+    <span class="sec-label sec-label-light rv">Recruit</span>
+    <h2 class="sec-h sec-h-light rv d1">マルコの成長が、<br>あなたの毎日を豊かにする。</h2>
+    <div class="sec-rule sec-rule-light rv d2"></div>
+    <p class="sec-p sec-p-light rv d2">海の風を感じながら、地元の食材でつくるこだわりのパスタ。ホールもキッチンも、チームで支え合う明るい職場です。未経験の方も大歓迎！</p>
+    <div class="r-cards rv d3">
+      <div class="r-card">
+        <p class="r-card-type">Part Time</p>
+        <dl>
+          <div><dt>Salary</dt><dd>時給 1,200円〜1,500円</dd></div>
+          <div><dt>Hours</dt><dd>週3〜4日から / 1日3時間〜OK</dd></div>
+          <div><dt>Note</dt><dd>扶養内・Wワーク・学生歓迎。ライフスタイルに合わせて。</dd></div>
+        </dl>
+      </div>
+      <div class="r-card">
+        <p class="r-card-type">Full Time</p>
+        <dl>
+          <div><dt>Salary</dt><dd>月給 22万円〜28万円</dd></div>
+          <div><dt>Hours</dt><dd>8:00〜17:00（休憩あり）</dd></div>
+          <div><dt>Benefits</dt><dd>社会保険完備・退職金制度あり・交通費支給</dd></div>
+          <div><dt>Note</dt><dd>将来的にお店を持ちたい方にもぴったりです。</dd></div>
+        </dl>
+      </div>
+      <div class="r-contact" style="grid-column:1/-1;">
+        採用担当：清水　Mail: <a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="pg-footer">
+    <div class="pf-links">
+      <a href="https://www.enya-otd.com/" target="_blank">えんやどっと丸</a>
+      <a href="https://epwds0626-oss.github.io/fish-hack/" target="_blank">Fish Hack</a>
+      <a href="https://epwds0626-oss.github.io/onetable-design/" target="_blank">One Table Design</a>
+    </div>
+    <p class="pf-copy">© 2025 Pasta Marco / One Table Design Inc.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script>
+// ── CURSOR
+const dot = document.getElementById('cur-dot');
+const ring = document.getElementById('cur-ring');
+let mx=0, my=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx+'px'; dot.style.top = my+'px';
+  ring.style.left = mx+'px'; ring.style.top = my+'px';
+});
+
+// ── SECTION SWITCH
+const SECS = ['home','story','facility','menu','access','reservation','recruit'];
+let current = 'home';
+let busy = false;
+
+function goTo(id) {
+  if (id === current || busy) return;
+  busy = true;
+
+  const from = document.getElementById('pg-'+current);
+  const to   = document.getElementById('pg-'+id);
+
+  // leave
+  from.classList.add('leave');
+  setTimeout(() => {
+    from.classList.remove('active','leave');
+    // enter
+    to.classList.add('active','enter');
+    // リビール発火
+    to.querySelectorAll('.rv').forEach((el,i) => {
+      el.classList.remove('in');
+      setTimeout(() => el.classList.add('in'), i * 70 + 80);
+    });
+    setTimeout(() => {
+      to.classList.remove('enter');
+      busy = false;
+    }, 100);
+  }, 460);
+
+  current = id;
+  updateDots();
+
+  // nav bg
+  const lightSecs = ['reservation'];
+  document.getElementById('nav').classList.toggle('bg', !lightSecs.includes(id));
+}
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach(d =>
+    d.classList.toggle('on', d.dataset.to === current)
+  );
+}
+
+// クリックハンドラ（data-to 属性）
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-to]');
+  if (!el) return;
+  e.preventDefault();
+  const id = el.dataset.to;
+  goTo(id);
+  // ドロワー閉じる
+  closeDrawer();
+});
+
+// ── KEYBOARD
+document.addEventListener('keydown', e => {
+  const i = SECS.indexOf(current);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') goTo(SECS[Math.min(i+1, SECS.length-1)]);
+  if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  goTo(SECS[Math.max(i-1, 0)]);
+});
+
+// ── WHEEL（デスクトップのみ）
+let wheelTimer = null;
+document.addEventListener('wheel', e => {
+  if (wheelTimer) return;
+  wheelTimer = setTimeout(() => { wheelTimer = null; }, 900);
+  const i = SECS.indexOf(current);
+  if (e.deltaY > 0) goTo(SECS[Math.min(i+1, SECS.length-1)]);
+  else              goTo(SECS[Math.max(i-1, 0)]);
+}, { passive: true });
+
+// ── TOUCH SWIPE
+let ty0 = 0;
+document.addEventListener('touchstart', e => { ty0 = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dy = ty0 - e.changedTouches[0].clientY;
+  if (Math.abs(dy) < 40) return;
+  const i = SECS.indexOf(current);
+  if (dy > 0) goTo(SECS[Math.min(i+1, SECS.length-1)]);
+  else        goTo(SECS[Math.max(i-1, 0)]);
+});
+
+// ── HAMBURGER
+const hamb = document.getElementById('hamb');
+const drawer = document.getElementById('drawer');
+const dmask = document.getElementById('dmask');
+function closeDrawer() {
+  drawer.classList.remove('open');
+  dmask.classList.remove('open');
+  hamb.classList.remove('open');
+}
+hamb.addEventListener('click', () => {
+  const o = drawer.classList.toggle('open');
+  dmask.classList.toggle('open', o);
+  hamb.classList.toggle('open', o);
+});
+dmask.addEventListener('click', closeDrawer);
+
+// ── NAV bg 初期
+document.getElementById('nav').classList.add('bg');
+
+// ── VACANCY
+const GAS = 'https://script.google.com/macros/s/AKfycbxJo0L_KrPlDnWJl4k1I2M-N9ZcH1UqMiNwm6VtGZwB2l5_1T_l0DjyqN3TpPxjRV0/exec';
+function vcInfo(s){
+  return { '空席あり':['tb-open','空席あり'], '空席わずか':['tb-few','残りわずか'], '満席':['tb-full','満席'] }[s]
+      || ['tb-closed','受付終了'];
+}
+function loadVac(d){
+  const cb='vc'+Date.now(), sc=document.createElement('script');
+  sc.src=`${GAS}?date=${d}&callback=${cb}`;
+  window[cb]=data=>{
+    document.querySelectorAll('[data-slot]').forEach(b=>{
+      const [cls,txt]=vcInfo(data['slot'+b.dataset.slot]);
+      b.className='tbadge '+cls; b.textContent=txt;
+    });
+    document.body.removeChild(sc); delete window[cb];
+  };
+  document.body.appendChild(sc);
+}
+const rDate=document.getElementById('rDate');
+rDate.min=new Date().toISOString().split('T')[0];
+rDate.addEventListener('change',()=>loadVac(rDate.value));
+
+// ── SUBMIT
+document.getElementById('rSubmit').addEventListener('click', async()=>{
+  const V=id=>document.getElementById(id).value.trim();
+  const name=V('rName'), phone=V('rPhone'), email=V('rEmail'), date=V('rDate');
+  const time=(document.querySelector('input[name="rt"]:checked')||{}).value||'';
+  const guests=document.getElementById('rGuests').value;
+  const notes=V('rNotes');
+  const msg=document.getElementById('rMsg'), btn=document.getElementById('rSubmit');
+  if(!name||!phone||!email||!date||!time||!guests){
+    msg.textContent='必須項目をすべて入力してください。'; msg.className='r-msg ng'; return;
+  }
+  btn.disabled=true; msg.textContent='送信中…'; msg.className='r-msg';
+  try{
+    await fetch(`${GAS}?${new URLSearchParams({name,email,phone,date,time,guests,notes})}`,{method:'GET',mode:'no-cors'});
+    msg.textContent='ご予約を受け付けました。確認メールをお送りします。'; msg.className='r-msg ok';
+    ['rName','rEmail','rPhone','rDate','rNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('rGuests').value='';
+    document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
+    document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load';});
+  }catch{
+    msg.textContent='送信に失敗しました。時間をおいて再度お試しください。'; msg.className='r-msg ng';
+  }finally{ btn.disabled=false; }
+});
+
+// 初期リビール
+document.getElementById('pg-home').querySelectorAll('.rv').forEach((el,i)=>{
+  setTimeout(()=>el.classList.add('in'), i*70+200);
+});
+</script>
+</body>
+</html>
