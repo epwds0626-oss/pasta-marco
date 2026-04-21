@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>パスタのマルコ | 大洗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Noto+Serif+JP:wght@200;300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cg:'Cormorant Garamond',serif;
+  --ns:'Noto Serif JP',serif;
+  --w:#fff;--w55:rgba(255,255,255,.55);--w30:rgba(255,255,255,.30);--w06:rgba(255,255,255,.06);
+  --ink:#111009;--off:#f5f1ea;--cream:#e8e2d6;--olive:#5c6b2e;--ollt:#8fa440;--gold:#b09a5a;--sea:#0e1a22;--sea2:#162230;
+}
+html{font-size:16px}
+body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);overflow:hidden;cursor:none;width:100%;height:100vh}
+@media(max-width:900px){body{cursor:auto}}
+
+/* CURSOR */
+#cd,#cr{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cd{width:6px;height:6px;background:#fff;mix-blend-mode:difference;transition:width .2s,height .2s}
+#cr{width:36px;height:36px;border:1px solid rgba(255,255,255,.28);transition:left .13s cubic-bezier(.23,1,.32,1),top .13s cubic-bezier(.23,1,.32,1),width .3s,height .3s}
+@media(max-width:900px){#cd,#cr{display:none}}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:600;display:flex;justify-content:space-between;align-items:center;padding:24px 52px;background:rgba(14,26,34,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--w06);transition:padding .3s}
+.nav-logo{display:flex;align-items:center;text-decoration:none;height:48px}
+.nav-logo img{height:44px;width:auto;filter:invert(1);opacity:.9;max-width:180px}
+.nav-logo-fb{font-family:var(--cg);font-style:italic;font-size:20px;font-weight:300;color:var(--w);letter-spacing:.1em;display:none}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none}
+.nav-links a{font-family:var(--cg);font-size:13px;font-weight:300;letter-spacing:.28em;color:var(--w55);text-decoration:none;transition:color .2s,letter-spacing .25s}
+.nav-links a:hover{color:var(--w);letter-spacing:.38em}
+.nav-res{color:var(--w) !important;border:1px solid rgba(255,255,255,.3);padding:9px 22px;transition:background .2s,border-color .2s !important;letter-spacing:.3em !important}
+.nav-res:hover{background:rgba(255,255,255,.1) !important}
+.hamb{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:none;padding:4px}
+.hamb span{display:block;width:22px;height:1px;background:#fff;transition:all .3s}
+.hamb.open span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
+.hamb.open span:nth-child(2){opacity:0}
+.hamb.open span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
+
+/* DRAWER */
+.dmask{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:590;opacity:0;pointer-events:none;transition:opacity .35s}
+.dmask.open{opacity:1;pointer-events:all}
+.drawer{position:fixed;top:0;right:-100%;width:min(300px,80vw);height:100dvh;background:var(--sea2);z-index:595;display:flex;flex-direction:column;justify-content:center;padding:0 44px;transition:right .55s cubic-bezier(.76,0,.24,1)}
+.drawer.open{right:0}
+.drawer a{font-family:var(--cg);font-size:15px;font-weight:300;letter-spacing:.3em;color:var(--w55);text-decoration:none;padding:20px 0;border-bottom:1px solid var(--w06);transition:color .2s}
+.drawer a:hover{color:var(--w)}
+
+/* DOTS */
+.dots{position:fixed;right:26px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:11px;z-index:500}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22);cursor:none;transition:background .3s,transform .3s;position:relative}
+.dot.on{background:#fff;transform:scale(1.7)}
+.dot-tip{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--cg);font-size:11px;letter-spacing:.3em;color:var(--w55);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s}
+.dot:hover .dot-tip,.dot.on .dot-tip{opacity:1}
+@media(max-width:900px){.dots{display:none}}
+
+/* =====================
+   SECTION 共通構造
+   ビジュアル → スクロール → 白フェード → テキスト
+===================== */
+.sec{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--off)}
+.sec.active{display:flex}
+
+/* ビジュアルパート */
+.vp{position:relative;width:100%;height:100vh;height:100dvh;flex-shrink:0;overflow:hidden}
+.vbg{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.04);transition:transform 14s ease-out}
+.sec.active .vbg{transform:scale(1)}
+.vov{position:absolute;inset:0;background:linear-gradient(160deg,rgba(10,18,24,.80) 0%,rgba(10,18,24,.38) 55%,rgba(10,18,24,.72) 100%)}
+.vvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vcatch{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;padding:100px 56px 80px;max-width:760px}
+.vlbl{font-family:var(--cg);font-size:13px;font-weight:300;letter-spacing:.55em;color:rgba(255,255,255,.5);margin-bottom:28px;opacity:0;animation:riLeft 1s .2s cubic-bezier(.16,1,.3,1) forwards}
+.vh{font-family:var(--cg);font-weight:300;font-size:clamp(36px,5.5vw,78px);line-height:1.2;letter-spacing:.02em;color:var(--w);margin-bottom:28px;opacity:0;animation:riLeft 1.2s .38s cubic-bezier(.16,1,.3,1) forwards}
+.vh em{font-style:italic;color:#ccd88e;font-weight:300}
+.vsub{font-size:14px;line-height:2.2;color:var(--w55);max-width:360px;opacity:0;animation:riLeft 1s .62s cubic-bezier(.16,1,.3,1) forwards}
+.vinfo{position:absolute;bottom:36px;right:52px;z-index:2;text-align:right;opacity:0;animation:riUp .9s 1.2s forwards}
+.vinfo dt{font-family:var(--cg);font-size:9px;letter-spacing:.55em;color:var(--w30);margin-bottom:4px}
+.vinfo dd{font-family:var(--cg);font-size:13px;font-weight:300;color:var(--w55);letter-spacing:.08em;line-height:1.9}
+.shint{position:absolute;bottom:36px;left:56px;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;opacity:0;animation:riUp .8s 1.4s forwards}
+.shint-line{width:1px;height:48px;background:rgba(255,255,255,.2);position:relative;overflow:hidden}
+.shint-line::after{content:'';position:absolute;top:-100%;left:0;width:1px;height:100%;background:rgba(255,255,255,.7);animation:scanLine 2.2s 2.5s ease-in-out infinite}
+.shint-txt{font-family:var(--cg);font-size:9px;letter-spacing:.55em;color:rgba(255,255,255,.25);writing-mode:vertical-rl}
+
+/* スクロールフェード */
+.sfade{position:absolute;bottom:0;left:0;right:0;height:70vh;background:linear-gradient(to bottom,transparent 0%,var(--off) 100%);pointer-events:none;opacity:0;z-index:2}
+
+/* テキストパート — フェード完了後に表示 */
+.tp{position:relative;width:100%;min-height:100vh;min-height:100dvh;background:var(--off);display:flex;align-items:center;justify-content:center;padding:100px 56px 120px;
+  /* 初期は非表示 — JSでフェード完了後に表示 */
+  visibility:hidden;
+}
+.tp.revealed{visibility:visible}
+.ti{max-width:660px;width:100%}
+.ti.wide{max-width:820px}
+
+/* テキストアニメーション — 行・要素単位で左スライド */
+.ta{opacity:1;transform:none} /* taはJSで文字分割するので初期表示 */
+.ta.vis{opacity:1;transform:none}
+
+/* 文字単位スライドアニメ */
+.ch{
+  display:inline-block;
+  opacity:0;
+  transform:translateX(-22px);
+  transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1);
+}
+.ch.in{opacity:1;transform:none}
+
+/* 行単位スライドアニメ（trule,textra,tnext等の塊） */
+.bl{
+  opacity:0;
+  transform:translateX(-28px);
+  transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);
+}
+.bl.in{opacity:1;transform:none}
+
+.tlbl{font-family:var(--cg);font-size:16px;font-weight:300;letter-spacing:.5em;color:rgba(17,16,9,.55);display:block;margin-bottom:32px}
+.trule{width:40px;height:1px;background:rgba(17,16,9,.18);margin-bottom:32px}
+.th{font-family:var(--cg);font-weight:300;font-size:clamp(26px,3.8vw,48px);line-height:1.4;letter-spacing:.04em;color:var(--ink);margin-bottom:32px}
+.tbody{font-size:15px;line-height:2.5;color:rgba(17,16,9,.72)}
+.tbody p+p{margin-top:1.6em}
+.textra{margin-top:44px}
+
+/* 次へボタン */
+.tnext{margin-top:60px;display:inline-flex;align-items:center;gap:14px;font-family:var(--cg);font-size:12px;font-weight:300;letter-spacing:.4em;color:rgba(17,16,9,.35);background:none;border:none;padding:0;cursor:none;transition:color .2s}
+.tnext:hover{color:var(--olive)}
+.tnext::after{content:'';display:block;width:40px;height:1px;background:currentColor;transition:width .3s}
+.tnext:hover::after{width:60px}
+@media(max-width:900px){.tnext{display:none;cursor:pointer}}
+
+/* 背景写真 */
+#sec-home  .vbg{background:none}
+#sec-story .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_4066.jpeg');background-position:center 35%}
+#sec-fac   .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_5688.jpeg');background-position:center 40%}
+#sec-menu  .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_4067.jpeg');background-position:center 50%}
+#sec-acc   .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_4330.jpeg');background-position:center 50%}
+#sec-res   .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_4062.jpeg');background-position:center 45%}
+#sec-rec   .vbg{background-image:url('https://epwds0626-oss.github.io/pasta-marco/IMG_6333.jpeg');background-position:center 15%}
+@media(max-width:900px){#sec-rec .vbg{background-position:50% 10%}}
+
+/* コンテンツスタイル */
+.seats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(17,16,9,.12);margin-top:8px}
+.seat{padding:24px 24px 24px 0;border-bottom:1px solid rgba(17,16,9,.12)}
+.seat:nth-child(2){padding-left:24px;border-left:1px solid rgba(17,16,9,.12);border-right:1px solid rgba(17,16,9,.12)}
+.seat:nth-child(3){padding-left:24px}
+.seat-en{font-family:var(--cg);font-style:italic;font-size:12px;letter-spacing:.35em;color:var(--ollt);margin-bottom:8px}
+.seat-jp{font-size:14px;color:var(--ink);margin-bottom:10px;font-weight:300;letter-spacing:.04em}
+.seat-body{font-size:12px;line-height:2;color:rgba(17,16,9,.55)}
+.ftags{margin-top:24px;display:flex;flex-wrap:wrap;gap:8px}
+.ftag{font-family:var(--cg);font-size:11px;letter-spacing:.2em;color:rgba(17,16,9,.45);border:1px solid rgba(17,16,9,.18);padding:6px 16px;transition:all .2s}
+.ftag:hover{color:var(--olive);border-color:var(--olive)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(17,16,9,.1);margin-top:8px}
+.mc{padding:28px 24px;border-right:1px solid rgba(17,16,9,.1);border-bottom:1px solid rgba(17,16,9,.1);transition:background .25s}
+.mc:hover{background:rgba(17,16,9,.025)}
+.mc:nth-child(even){border-right:none}
+.mc-cat{font-family:var(--cg);font-size:10px;letter-spacing:.45em;color:var(--ollt);margin-bottom:10px}
+.mc-name{font-family:var(--cg);font-size:17px;font-weight:300;color:var(--ink);margin-bottom:10px;letter-spacing:.04em}
+.mc-desc{font-size:12px;line-height:1.9;color:rgba(17,16,9,.55)}
+.mc-price{margin-top:14px;font-family:var(--cg);font-style:italic;font-size:22px;font-weight:300;color:var(--gold)}
+.mc-note{font-family:var(--ns);font-style:normal;font-size:10px;color:rgba(17,16,9,.3);letter-spacing:.15em;margin-left:8px}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.adl{display:flex;flex-direction:column;gap:18px}
+.adl dt{font-family:var(--cg);font-size:9px;letter-spacing:.55em;color:rgba(17,16,9,.28);margin-bottom:3px}
+.adl dd{font-family:var(--cg);font-size:14px;font-weight:300;color:rgba(17,16,9,.7);line-height:1.9}
+.adl a{color:var(--olive)}
+.map-wrap{aspect-ratio:4/3;overflow:hidden;border:1px solid rgba(17,16,9,.1)}
+.map-wrap iframe{width:100%;height:100%;border:none;filter:saturate(.5)}
+.rform{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px}
+.rf{display:flex;flex-direction:column;gap:7px}
+.rf.full{grid-column:1/-1}
+.rl{font-family:var(--cg);font-size:9px;font-weight:300;letter-spacing:.5em;color:rgba(17,16,9,.3)}
+.rl em{color:#904040;font-style:normal;margin-left:5px}
+.ri,.rs,.rt{background:var(--w);border:1px solid var(--cream);padding:12px 15px;font-family:var(--ns);font-weight:200;font-size:14px;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none;border-radius:0}
+.ri::placeholder,.rt::placeholder{color:rgba(17,16,9,.2)}
+.ri:focus,.rs:focus,.rt:focus{border-color:var(--olive)}
+.rt{resize:none;height:72px}
+.topts{display:flex;flex-direction:column}
+.topt{display:flex;align-items:center;gap:16px;padding:13px 15px;border:1px solid var(--cream);border-top:none;background:var(--w);cursor:none;transition:background .2s}
+.topt:first-child{border-top:1px solid var(--cream)}
+.topt:has(input:checked){background:#edf2e2;border-color:#b8cd80}
+.topt input{display:none}
+.tdot{width:9px;height:9px;border-radius:50%;border:1px solid rgba(17,16,9,.2);flex-shrink:0;transition:all .2s}
+.topt:has(input:checked) .tdot{background:var(--olive);border-color:var(--olive);box-shadow:0 0 0 3px rgba(92,107,46,.15)}
+.ttext{font-family:var(--ns);font-weight:200;font-size:13px;color:var(--ink);flex:1}
+.tbadge{font-family:var(--cg);font-size:10px;font-weight:300;letter-spacing:.22em;padding:3px 10px;border:1px solid}
+.tb-open{color:var(--olive);border-color:#b8cd80}.tb-few{color:#8a6a18;border-color:#c8aa58}.tb-full{color:#903838;border-color:#d09090}
+.tb-closed{color:rgba(17,16,9,.28);border-color:var(--cream)}.tb-load{color:rgba(17,16,9,.28);border-color:var(--cream);animation:pulse 1.5s infinite}
+.res-note{padding:18px 22px;border-left:2px solid var(--olive);background:var(--cream);font-size:12px;line-height:2;color:rgba(17,16,9,.5);margin-bottom:8px}
+.res-note a{color:var(--olive)}
+.rsub{grid-column:1/-1;margin-top:8px;padding:16px;background:var(--ink);border:none;font-family:var(--cg);font-weight:300;font-size:13px;letter-spacing:.3em;color:var(--w);cursor:none;transition:background .25s}
+.rsub:hover{background:var(--sea)}.rsub:disabled{opacity:.4}
+.rmsg{grid-column:1/-1;text-align:center;font-family:var(--cg);font-size:12px;letter-spacing:.1em;color:rgba(17,16,9,.32);min-height:18px}
+.rmsg.ok{color:var(--olive)}.rmsg.ng{color:#903838}
+.rcards{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(17,16,9,.1)}
+.rcard{padding:32px 28px;border-right:1px solid rgba(17,16,9,.1)}
+.rcard:last-of-type{border-right:none}
+.rc-type{font-family:var(--cg);font-style:italic;font-size:12px;font-weight:300;letter-spacing:.4em;color:var(--ollt);margin-bottom:22px}
+.rcard dl{display:flex;flex-direction:column;gap:14px}
+.rcard dt{font-family:var(--cg);font-size:9px;letter-spacing:.5em;color:rgba(17,16,9,.28);margin-bottom:2px}
+.rcard dd{font-family:var(--ns);font-weight:200;font-size:13px;color:rgba(17,16,9,.65);line-height:1.9}
+.r-contact{padding:22px 28px;border-top:1px solid rgba(17,16,9,.1);font-size:13px;color:rgba(17,16,9,.45);line-height:2.2;grid-column:1/-1}
+.r-contact a{color:var(--olive)}
+.sfooter{background:var(--sea2);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--w06);flex-shrink:0;gap:12px}
+.sfooter a{font-family:var(--cg);font-size:11px;font-weight:300;letter-spacing:.22em;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s}
+.sfooter a:hover{color:rgba(255,255,255,.7)}
+.sfooter-links{display:flex;gap:24px;flex-wrap:wrap}
+.sfooter-c{font-family:var(--cg);font-size:10px;letter-spacing:.3em;color:rgba(255,255,255,.15);white-space:nowrap}
+
+/* アニメーション */
+@keyframes riUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes riLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+@keyframes scanLine{0%{top:-100%}100%{top:220%}}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:.12}}
+@keyframes secIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes secOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-16px)}}
+
+/* モバイルナビ — テキストパートでは暗色に */
+.mnav{position:fixed;bottom:0;left:0;right:0;z-index:700;display:none;justify-content:space-between;align-items:center;padding:12px 20px 20px;background:linear-gradient(to top,rgba(10,18,24,.9) 0%,transparent 100%);pointer-events:none;transition:background .4s}
+.mnav.light{background:linear-gradient(to top,rgba(245,241,234,.98) 0%,rgba(245,241,234,.5) 100%)}
+.mbtn{pointer-events:all;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-family:var(--cg);font-size:11px;letter-spacing:.3em;padding:10px 20px;transition:background .2s,color .2s,border-color .2s;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.mbtn:active{background:rgba(255,255,255,.22)}.mbtn:disabled{opacity:.2;pointer-events:none}
+.mnav.light .mbtn{background:rgba(17,16,9,.06);border-color:rgba(17,16,9,.18);color:rgba(17,16,9,.55)}
+.mcnt{font-family:var(--cg);font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.4);transition:color .4s}
+.mnav.light .mcnt{color:rgba(17,16,9,.35)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  body{overflow:hidden}
+  .nav{padding:14px 20px}
+  .nav-links{display:none}.hamb{display:flex}
+  .vcatch{padding:80px 20px 64px}
+  .vh{font-size:clamp(24px,7vw,44px);line-height:1.3}
+  .vlbl{font-size:15px;letter-spacing:.4em;color:rgba(255,255,255,.7)}
+  .shint{left:20px;bottom:72px}.vinfo{bottom:72px;right:20px}
+  .tp{padding:72px 20px 120px}
+  .seats{grid-template-columns:1fr}
+  .seat{padding:20px 0 !important;border-right:none !important;border-left:none !important}
+  .mgrid{grid-template-columns:1fr}.mc:nth-child(even){border-right:none}
+  .agrid{grid-template-columns:1fr;gap:24px}
+  .rform{grid-template-columns:1fr}
+  .rcards{grid-template-columns:1fr}.rcard{border-right:none;border-bottom:1px solid rgba(17,16,9,.1)}
+  .sfooter{flex-direction:column;gap:8px;padding:16px 20px 72px;text-align:center}
+  .sfooter-links{justify-content:center;gap:16px}
+  .r-contact{padding:16px 20px;font-size:12px;line-height:2}
+  .mnav{display:flex}
+}
+</style>
+</head>
+<body>
+<div id="cd"></div><div id="cr"></div>
+
+<nav class="nav">
+  <a class="nav-logo" href="#" data-to="home">
+    <img src="https://epwds0626-oss.github.io/pasta-marco/IMG_4061.png" alt="Pasta Marco" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <span class="nav-logo-fb">Pasta Marco</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" data-to="story">Story</a></li>
+    <li><a href="#" data-to="fac">Facility</a></li>
+    <li><a href="#" data-to="menu">Menu</a></li>
+    <li><a href="#" data-to="acc">Access</a></li>
+    <li><a href="#" data-to="rec">Recruit</a></li>
+    <li><a href="#" data-to="res" class="nav-res">Reservation</a></li>
+  </ul>
+  <button class="hamb" id="hamb"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="dmask" id="dmask"></div>
+<div class="drawer" id="drawer">
+  <a href="#" data-to="home" class="da">Home</a>
+  <a href="#" data-to="story" class="da">Story</a>
+  <a href="#" data-to="fac" class="da">Facility</a>
+  <a href="#" data-to="menu" class="da">Menu</a>
+  <a href="#" data-to="acc" class="da">Access</a>
+  <a href="#" data-to="res" class="da">Reservation</a>
+  <a href="#" data-to="rec" class="da">Recruit</a>
+</div>
+
+<div class="dots" id="dots">
+  <div class="dot on" data-to="home"><span class="dot-tip">Home</span></div>
+  <div class="dot" data-to="story"><span class="dot-tip">Story</span></div>
+  <div class="dot" data-to="fac"><span class="dot-tip">Facility</span></div>
+  <div class="dot" data-to="menu"><span class="dot-tip">Menu</span></div>
+  <div class="dot" data-to="acc"><span class="dot-tip">Access</span></div>
+  <div class="dot" data-to="res"><span class="dot-tip">Reservation</span></div>
+  <div class="dot" data-to="rec"><span class="dot-tip">Recruit</span></div>
+</div>
+
+<div class="mnav" id="mnav">
+  <button class="mbtn" id="mprev">← PREV</button>
+  <span class="mcnt" id="mcnt">1 / 7</span>
+  <button class="mbtn" id="mnext">NEXT →</button>
+</div>
+
+<!-- HOME -->
+<div class="sec active" id="sec-home">
+  <div class="vp">
+    <div class="vbg"></div>
+    <video class="vvid" autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80">
+      <source src="https://videos.pexels.com/video-files/1918465/1918465-uhd_2560_1440_25fps.mp4" type="video/mp4">
+      <source src="https://videos.pexels.com/video-files/1093662/1093662-uhd_2560_1440_24fps.mp4" type="video/mp4">
+    </video>
+    <div class="vov"></div>
+    <div class="sfade" id="sf-home"></div>
+    <div class="vcatch">
+      <p class="vlbl">Pasta Marco — Oarai, Ibaraki</p>
+      <h1 class="vh"><em>海辺の町</em>で、<br>ゆっくり過ごす<br>昼のひととき。</h1>
+      <p class="vsub">大洗漁港のすぐそばに、<br>テラスのある小さなパスタ屋があります。</p>
+    </div>
+    <dl class="vinfo"><dt>Hours</dt><dd>11:00 — 16:00 L.O. 15:30</dd><dt style="margin-top:12px">Closed</dt><dd>毎週木曜日</dd></dl>
+    <div class="shint"><div class="shint-line"></div><span class="shint-txt">Scroll</span></div>
+  </div>
+  <div class="tp">
+    <div class="ti">
+      <span class="tlbl">Concept</span>
+      <div class="trule"></div>
+      <div class="tbody">
+        <p>海辺の町・大洗で、地元の素材とイタリアの伝統をかけ合わせ、ここだけのパスタをお届けいたします。素材の持ち味を大切に、シンプルだけれど、心に残るひと皿を。</p>
+        <p>毎日のごはんにも、ちょっと特別な日にも。パスタのマルコは、そんなお店を目指しています。</p>
+      </div>
+      <button class="tnext" data-to="story">Story</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORY -->
+<div class="sec" id="sec-story">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-story"></div>
+    <div class="vcatch">
+      <p class="vlbl">Story</p>
+      <h2 class="vh">海と魚に向き合ってきた<br>店が、つくる<br><em>本格パスタ。</em></h2>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti">
+      <span class="tlbl">Story</span>
+      <div class="trule"></div>
+      <div class="tbody">
+        <p>大洗の地魚に30年向き合ってきた「えんやどっと丸」の姉妹店として、2025年11月に生まれました。魚介の目利きと下処理は本店譲り、イタリアの技法で一皿に落とし込みます。</p>
+        <p>ソースはすべて店内仕込み。生パスタは、もちっとした食感を大切に。シンプルだけど、ごまかしのきかない料理です。</p>
+        <p style="margin-top:2em;font-family:var(--cg);font-style:italic;font-size:17px;color:var(--ollt);line-height:2">「港のように人が集い、また帰ってくる店。」</p>
+      </div>
+      <button class="tnext" data-to="fac">Facility</button>
+    </div>
+  </div>
+</div>
+
+<!-- FACILITY -->
+<div class="sec" id="sec-fac">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-fac"></div>
+    <div class="vcatch">
+      <p class="vlbl">Facility</p>
+      <h2 class="vh">それぞれの時間に<br>寄り添う、<br><em>やさしい席。</em></h2>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti wide">
+      <span class="tlbl">Facility</span>
+      <div class="trule"></div>
+      <div class="tbody"><p>3種類の席をご用意しています。どの席にも共通しているのは、居心地の良さと、ていねいに整えられた空間です。</p></div>
+      <div class="textra">
+        <div class="seats">
+          <div class="seat"><p class="seat-en">Counter</p><p class="seat-jp">カウンター席</p><p class="seat-body">おひとりでも気軽に。キッチンの空気感を感じながら、静かにパスタと向き合う時間を。</p></div>
+          <div class="seat"><p class="seat-en">Table</p><p class="seat-jp">テーブル席</p><p class="seat-body">ご友人やご家族との食事にぴったり。会話を楽しみながらゆったりお過ごしください。</p></div>
+          <div class="seat"><p class="seat-en">Terrace</p><p class="seat-jp">テラス席</p><p class="seat-body">外の空気を感じながら開放的に。ペット同伴でのご利用も可能です。</p></div>
+        </div>
+        <div class="ftags"><span class="ftag">テラス席</span><span class="ftag">ペット同伴可</span><span class="ftag">バリアフリー</span><span class="ftag">無料駐車場</span><span class="ftag">お子様連れ歓迎</span></div>
+      </div>
+      <button class="tnext" data-to="menu">Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="sec" id="sec-menu">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-menu"></div>
+    <div class="vcatch">
+      <p class="vlbl">Menu</p>
+      <h2 class="vh">この町の恵みを<br><em>パスタに込めて。</em></h2>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti wide">
+      <span class="tlbl">Menu</span>
+      <div class="trule"></div>
+      <div class="textra">
+        <p style="font-size:15px;line-height:2.4;color:rgba(17,16,9,.68);margin-bottom:32px">魚介も野菜も、できる限り地元のものを使い、その日その時の「いちばん美味しい」を届けたい。</p>
+        <div class="mgrid">
+          <div class="mc"><p class="mc-cat">Daily Pasta Set</p><p class="mc-name">日替わりパスタセット</p><p class="mc-desc">サラダバー＆ドリンクバー付。その日ごとに変わる一皿を特別価格で。</p><p class="mc-price">¥980<span class="mc-note">大洗町民限定</span></p></div>
+          <div class="mc"><p class="mc-cat">Salad Bar</p><p class="mc-name">サラダバー</p><p class="mc-desc">大洗・茨城の地元野菜を中心に。自家製の特製ドレッシング。</p><p class="mc-price">食べ放題 ¥580 <span style="font-size:15px">/ ワンストップ ¥280</span></p></div>
+          <div class="mc"><p class="mc-cat">Drink Bar</p><p class="mc-name">ドリンクバー</p><p class="mc-desc">淹れたてコーヒー・紅茶・ハーブティーなど。</p><p class="mc-price">飲み放題 ¥380 <span style="font-size:15px">/ ワンストップ ¥180</span></p></div>
+          <div class="mc" style="display:flex;align-items:center;justify-content:center"><p style="font-family:var(--cg);font-style:italic;font-size:16px;font-weight:300;color:rgba(17,16,9,.2);line-height:2;text-align:center">"シンプルだけど、<br>ごまかしのきかない料理。"</p></div>
+        </div>
+      </div>
+      <button class="tnext" data-to="acc">Access</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCESS -->
+<div class="sec" id="sec-acc">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-acc"></div>
+    <div class="vcatch">
+      <p class="vlbl">Access</p>
+      <h2 class="vh">初めての方も安心。<br><em>お店までのご案内。</em></h2>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti wide">
+      <span class="tlbl">Access</span>
+      <div class="trule"></div>
+      <div class="textra">
+        <div class="agrid">
+          <dl class="adl">
+            <div><dt>Shop</dt><dd>パスタのマルコ</dd></div>
+            <div><dt>Address</dt><dd>茨城県東茨城郡大洗町磯浜町8253-23</dd></div>
+            <div><dt>Hours</dt><dd>11:00 — 16:00 L.O. 15:30</dd></div>
+            <div><dt>Closed</dt><dd>毎週木曜日</dd></div>
+            <div><dt>Train</dt><dd>鹿島臨海鉄道「大洗駅」より徒歩約15分</dd></div>
+            <div><dt>Parking</dt><dd>大洗漁港周辺の無料駐車場</dd></div>
+            <div><dt>Contact</dt><dd><a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a></dd></div>
+          </dl>
+          <div class="map-wrap"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d809.1!2d140.5790!3d36.3074!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60220e1b53d49b27%3A0xc08b6d3b5d5c7e6!2z44OR44K544K_44Gu44Oe44Or44KODE5!5e0!3m2!1sja!2sjp!4v1" allowfullscreen="" loading="lazy"></iframe></div>
+        </div>
+      </div>
+      <button class="tnext" data-to="res">Reservation</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESERVATION -->
+<div class="sec" id="sec-res">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-res"></div>
+    <div class="vcatch">
+      <p class="vlbl">Reservation</p>
+      <h2 class="vh">ご予約は<br><em>こちらからどうぞ。</em></h2>
+      <p class="vsub">えんやどっと丸の姉妹店として、地元大洗の魚介を活かしたパスタをご提供しています。</p>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti wide">
+      <span class="tlbl">Reservation</span>
+      <div class="trule"></div>
+      <div class="textra">
+        <p class="res-note">当日予約は午前10:30まで受付（自動確定）&nbsp; キャンセルは <a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a> まで</p>
+        <div class="rform" id="resForm">
+          <div class="rf"><label class="rl">氏名<em>必須</em></label><input type="text" class="ri" id="rName" placeholder="山田 太郎"></div>
+          <div class="rf"><label class="rl">電話<em>必須</em></label><input type="tel" class="ri" id="rPhone" placeholder="090-0000-0000"></div>
+          <div class="rf"><label class="rl">メール<em>必須</em></label><input type="email" class="ri" id="rEmail" placeholder="example@mail.com"></div>
+          <div class="rf"><label class="rl">予約日<em>必須</em></label><input type="date" class="ri" id="rDate"></div>
+          <div class="rf full"><label class="rl">予約時間<em>必須</em></label>
+            <div class="topts">
+              <label class="topt"><input type="radio" name="rt" value="11:00〜12:30　枠1"><span class="tdot"></span><span class="ttext">11:00 — 12:30　枠 1</span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="13:00〜14:30　枠2"><span class="tdot"></span><span class="ttext">13:00 — 14:30　枠 2</span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="15:00〜16:00　枠3"><span class="tdot"></span><span class="ttext">15:00 — 16:00　枠 3</span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
+            </div>
+          </div>
+          <div class="rf"><label class="rl">人数<em>必須</em></label>
+            <select class="rs" id="rGuests"><option value="">— 選択 —</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名以上</option></select>
+          </div>
+          <div class="rf"><label class="rl">備考</label><textarea class="rt" id="rNotes" placeholder="アレルギー / 席の希望など"></textarea></div>
+          <button class="rsub" id="rSubmit">予約を送信する（自動確定）</button>
+          <p class="rmsg" id="rMsg"></p>
+        </div>
+      </div>
+      <button class="tnext" data-to="rec">Recruit</button>
+    </div>
+  </div>
+  <div class="sfooter"><div class="sfooter-links"><a href="https://www.enya-otd.com/" target="_blank" rel="noopener">えんやどっと丸</a><a href="https://epwds0626-oss.github.io/fish-hack/" target="_blank" rel="noopener">Fish Hack</a><a href="https://epwds0626-oss.github.io/onetable-design/" target="_blank" rel="noopener">One Table Design</a></div><span class="sfooter-c">© 2025 Pasta Marco</span></div>
+</div>
+
+<!-- RECRUIT -->
+<div class="sec" id="sec-rec">
+  <div class="vp">
+    <div class="vbg"></div><div class="vov"></div>
+    <div class="sfade" id="sf-rec"></div>
+    <div class="vcatch">
+      <p class="vlbl">Recruit</p>
+      <h2 class="vh">マルコの成長が、<br>あなたの毎日を<br><em>豊かにする。</em></h2>
+    </div>
+  </div>
+  <div class="tp">
+    <div class="ti wide">
+      <span class="tlbl">Recruit</span>
+      <div class="trule"></div>
+      <div class="tbody"><p>海の風を感じながら、地元の食材でつくるこだわりのパスタ。ホールもキッチンも、チームで支え合う明るい職場。未経験大歓迎！</p></div>
+      <div class="textra">
+        <div class="rcards">
+          <div class="rcard"><p class="rc-type">Part Time</p><dl><div><dt>Salary</dt><dd>時給 1,200円〜1,500円</dd></div><div><dt>Hours</dt><dd>週3〜4日から / 1日3時間〜OK</dd></div><div><dt>Note</dt><dd>扶養内・Wワーク・学生歓迎</dd></div></dl></div>
+          <div class="rcard"><p class="rc-type">Full Time</p><dl><div><dt>Salary</dt><dd>月給 22万円〜28万円</dd></div><div><dt>Hours</dt><dd>8:00〜17:00（休憩あり）</dd></div><div><dt>Benefits</dt><dd>社会保険完備・退職金制度あり・交通費支給</dd></div></dl></div>
+          <div class="r-contact">採用担当：清水 &nbsp;Mail: <a href="mailto:epw.ds0626@gmail.com">epw.ds0626@gmail.com</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sfooter"><div class="sfooter-links"><a href="https://www.enya-otd.com/" target="_blank" rel="noopener">えんやどっと丸</a><a href="https://epwds0626-oss.github.io/fish-hack/" target="_blank" rel="noopener">Fish Hack</a><a href="https://epwds0626-oss.github.io/onetable-design/" target="_blank" rel="noopener">One Table Design</a></div><span class="sfooter-c">© 2025 Pasta Marco</span></div>
+</div>
+
+<script>
+const SECS=['home','story','fac','menu','acc','res','rec'];
+let cur='home',busy=false;
+const isMob=()=>window.innerWidth<=900;
+
+/* CURSOR */
+const cd=document.getElementById('cd'),cr=document.getElementById('cr');
+let mx=0,my=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cd.style.left=mx+'px';cd.style.top=my+'px';cr.style.left=mx+'px';cr.style.top=my+'px'});
+document.querySelectorAll('a,button,.dot,.ftag,.topt').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cd.style.width='12px';cd.style.height='12px';cr.style.opacity='.2';cr.style.width='56px';cr.style.height='56px'});
+  el.addEventListener('mouseleave',()=>{cd.style.width='6px';cd.style.height='6px';cr.style.opacity='1';cr.style.width='36px';cr.style.height='36px'});
+});
+
+/* SECTION SWITCH */
+function goTo(id){
+  if(id===cur||busy)return; busy=true;
+  const from=document.getElementById('sec-'+cur);
+  const to=document.getElementById('sec-'+id);
+  from.style.animation='secOut .5s cubic-bezier(.76,0,.24,1) forwards';
+  setTimeout(()=>{
+    from.classList.remove('active');from.style.animation='';
+    from.scrollTop=0; from._bot=false; from._top=true;
+    to.classList.add('active');to.style.animation='secIn .8s cubic-bezier(.16,1,.3,1) forwards';
+    to.scrollTop=0; to._bot=false; to._top=true;
+    to.querySelectorAll('.ta').forEach(el=>el.classList.remove('vis'));
+    // テキストパートも非表示にリセット
+    const toTp=to.querySelector('.tp');
+    if(toTp){
+      toTp.classList.remove('revealed');
+      // 文字・塊アニメをリセット
+      toTp.querySelectorAll('.ch').forEach(ch=>ch.classList.remove('in'));
+      toTp.querySelectorAll('.bl').forEach(bl=>bl.classList.remove('in'));
+      toTp.querySelectorAll('.tnext').forEach(el=>el.classList.remove('in'));
+      // split済みの文字はそのまま再利用（preppedは消さない）
+    }
+    delete to.dataset.revealed;
+    const sf=document.getElementById('sf-'+id); if(sf)sf.style.opacity=0;
+    mnav.classList.remove('light');
+    // ビジュアルパートのアニメをリセット→再発火
+    setTimeout(()=>{
+      to.querySelectorAll('.vlbl,.vh,.vsub,.vinfo,.shint').forEach(el=>{
+        el.style.animation='none';el.style.opacity='0';
+        void el.offsetHeight;el.style.animation='';
+      });
+    },50);
+    setTimeout(()=>{to.style.animation='';busy=false},100);
+  },460);
+  cur=id; updateUI();
+}
+function updateUI(){
+  document.querySelectorAll('.dot').forEach(d=>d.classList.toggle('on',d.dataset.to===cur));
+  updateMnav();
+}
+
+/* SCROLL → FADE + REVEAL */
+
+/* テキストを文字単位に分割してアニメ準備 */
+function splitChars(el){
+  if(el.dataset.split)return;
+  el.dataset.split='1';
+  const txt=el.textContent||'';
+  el.innerHTML='';
+  txt.split('').forEach(ch=>{
+    const s=document.createElement('span');
+    s.className='ch';
+    s.textContent=(ch===' '||ch==='\u00a0')?'\u00a0':ch;
+    el.appendChild(s);
+  });
+}
+
+/* 塊要素（trule, textra, tnext等）のアニメ準備 */
+function prepBlock(el){
+  if(el.dataset.split)return;
+  el.dataset.split='1';
+  el.classList.add('bl');
+}
+
+/* セクションのtp要素を準備 */
+function prepSection(sec){
+  const tp=sec.querySelector('.tp');
+  if(!tp||tp.dataset.prepped)return;
+  tp.dataset.prepped='1';
+  tp.querySelectorAll('.tlbl').forEach(el=>splitChars(el));
+  // tbody内のpのうち、rform/res-note内のものは除外
+  tp.querySelectorAll('.tbody p').forEach(el=>{
+    if(!el.closest('.rform')&&!el.closest('.res-note'))splitChars(el);
+  });
+  // trule・textra・tnext・res-note・rform は塊でスライド
+  tp.querySelectorAll('.trule,.textra,.tnext').forEach(el=>prepBlock(el));
+}
+
+function setupScroll(id){
+  const sec=document.getElementById('sec-'+id);
+  const sf=document.getElementById('sf-'+id);
+  const tp=sec?sec.querySelector('.tp'):null;
+  if(!sec)return;
+  // ページ読み込み時に準備
+  prepSection(sec);
+  sec._top=true; sec._bot=false; // 初期値
+  sec.addEventListener('scroll',()=>{
+    const sy=sec.scrollTop, vh=window.innerHeight;
+    const fadeP=Math.min(sy/(vh*0.6),1);
+    if(sf) sf.style.opacity=fadeP;
+    if(fadeP>=0.95&&!sec.dataset.revealed&&tp){
+      sec.dataset.revealed='1';
+      tp.classList.add('revealed');
+      revealSection(sec);
+      if(isMob()) mnav.classList.add('light');
+    }
+    sec._bot=(sy+sec.clientHeight>=sec.scrollHeight-10);
+    sec._top=(sy<=0);
+  },{passive:true});
+}
+
+/* 文字・塊を順番にアニメーション発火 */
+function revealSection(sec){
+  const tp=sec.querySelector('.tp');
+  if(!tp)return;
+  let t=0;
+  const step=38; // 文字間隔ms
+  const blockStep=180; // 塊間隔ms
+
+  // tlbl の文字を順番に
+  tp.querySelectorAll('.tlbl .ch').forEach(ch=>{
+    setTimeout(()=>ch.classList.add('in'),t);
+    t+=step;
+  });
+  t+=120;
+
+  // trule
+  const rule=tp.querySelector('.trule');
+  if(rule){setTimeout(()=>rule.classList.add('in'),t);t+=blockStep;}
+
+  // tbody の各p要素の文字を行ごとに
+  tp.querySelectorAll('.tbody p').forEach(p=>{
+    p.querySelectorAll('.ch').forEach(ch=>{
+      setTimeout(()=>ch.classList.add('in'),t);
+      t+=step*0.85;
+    });
+    t+=200; // 段落間
+  });
+
+  // textra
+  const extra=tp.querySelector('.textra');
+  if(extra){setTimeout(()=>extra.classList.add('in'),t);t+=blockStep;}
+
+  // tnext
+  const next=tp.querySelector('.tnext');
+  if(next){setTimeout(()=>next.classList.add('in'),t);}
+}
+
+SECS.forEach(setupScroll);
+
+/* CLICK */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-to]'); if(!el)return;
+  e.preventDefault(); goTo(el.dataset.to); closeDrawer();
+});
+
+/* WHEEL */
+let wt=null;
+document.addEventListener('wheel',e=>{
+  if(isMob())return;
+  const s=document.getElementById('sec-'+cur);
+  if(!s)return;
+  // スクロール可能なら内部スクロール優先
+  if(e.deltaY>0&&!s._bot)return;
+  if(e.deltaY<0&&!s._top)return;
+  if(busy)return;
+  if(wt)return; wt=setTimeout(()=>{wt=null},1200);
+  const i=SECS.indexOf(cur);
+  if(e.deltaY>0)goTo(SECS[Math.min(i+1,SECS.length-1)]);
+  else goTo(SECS[Math.max(i-1,0)]);
+},{passive:true});
+
+/* KEYBOARD */
+document.addEventListener('keydown',e=>{
+  if(isMob())return;
+  const i=SECS.indexOf(cur);
+  if(e.key==='ArrowDown'||e.key==='ArrowRight')goTo(SECS[Math.min(i+1,SECS.length-1)]);
+  if(e.key==='ArrowUp'||e.key==='ArrowLeft')goTo(SECS[Math.max(i-1,0)]);
+});
+
+/* MOBILE NAV */
+const mnav=document.getElementById('mnav');
+const mprev=document.getElementById('mprev');
+const mnext=document.getElementById('mnext');
+const mcnt=document.getElementById('mcnt');
+function updateMnav(){
+  mnav.style.display=isMob()?'flex':'none';
+  const i=SECS.indexOf(cur);
+  mcnt.textContent=(i+1)+' / '+SECS.length;
+  mprev.disabled=(i===0); mnext.disabled=(i===SECS.length-1);
+}
+mprev.addEventListener('click',()=>{const i=SECS.indexOf(cur);if(i>0)goTo(SECS[i-1])});
+mnext.addEventListener('click',()=>{const i=SECS.indexOf(cur);if(i<SECS.length-1)goTo(SECS[i+1])});
+window.addEventListener('resize',updateMnav);
+updateMnav();
+
+/* DRAWER */
+const hamb=document.getElementById('hamb'),drawer=document.getElementById('drawer'),dmask=document.getElementById('dmask');
+function closeDrawer(){drawer.classList.remove('open');dmask.classList.remove('open');hamb.classList.remove('open')}
+hamb.addEventListener('click',()=>{const o=drawer.classList.toggle('open');dmask.classList.toggle('open',o);hamb.classList.toggle('open',o)});
+dmask.addEventListener('click',closeDrawer);
+
+/* VACANCY */
+const GAS='https://script.google.com/macros/s/AKfycbwXE6IQ_Lcn6qJhJPermhgjhCjQq-rSsMtkyMS4R86sZARbSNS8ZuRWgjioC1fv9p-Z1w/exec';
+function vcInfo(s){return({'空席あり':['tb-open','空席あり'],'空席わずか':['tb-few','残りわずか'],'満席':['tb-full','満席']}[s])||['tb-closed','受付終了']}
+function loadVac(d){
+  const cb='vc'+Date.now(),sc=document.createElement('script');
+  sc.src=`${GAS}?date=${d}&callback=${cb}`;
+  window[cb]=data=>{document.querySelectorAll('[data-slot]').forEach(b=>{const[cls,txt]=vcInfo(data['slot'+b.dataset.slot]);b.className='tbadge '+cls;b.textContent=txt});document.body.removeChild(sc);delete window[cb]};
+  document.body.appendChild(sc);
+}
+const rDate=document.getElementById('rDate');
+rDate.min=new Date().toISOString().split('T')[0];
+rDate.addEventListener('change',()=>loadVac(rDate.value));
+
+/* SUBMIT */
+document.getElementById('rSubmit').addEventListener('click',async()=>{
+  const V=id=>document.getElementById(id).value.trim();
+  const name=V('rName'),phone=V('rPhone'),email=V('rEmail'),date=V('rDate');
+  const time=(document.querySelector('input[name="rt"]:checked')||{}).value||'';
+  const guests=document.getElementById('rGuests').value,notes=V('rNotes');
+  const msg=document.getElementById('rMsg'),btn=document.getElementById('rSubmit');
+  if(!name||!phone||!email||!date||!time||!guests){msg.textContent='必須項目をすべて入力してください。';msg.className='rmsg ng';return}
+  btn.disabled=true;msg.textContent='送信中…';msg.className='rmsg';
+  try{
+    await fetch(`${GAS}?${new URLSearchParams({name,email,phone,date,time,guests,notes})}`,{method:'GET',mode:'no-cors'});
+    msg.textContent='ご予約を受け付けました。確認メールをお送りします。';msg.className='rmsg ok';
+    ['rName','rEmail','rPhone','rDate','rNotes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('rGuests').value='';
+    document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
+    document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load'});
+  }catch{msg.textContent='送信に失敗しました。時間をおいて再度お試しください。';msg.className='rmsg ng'}
+  finally{btn.disabled=false}
+});
+</script>
+</body>
+</html>
