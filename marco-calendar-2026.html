@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>パスタのマルコ 営業カレンダー 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --cream: #F7F3EE;
+    --ink: #1C1A17;
+    --rust: #C25A3A;
+    --closed-red: #F5E0DA;
+    --closed-text: #C25A3A;
+    --muted: #8C8278;
+    --line: #D9D2C8;
+    --sat: #6E8CAF;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 18mm 16mm 16mm;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 10mm;
+  }
+
+  header .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.28em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  header .subtitle {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+  }
+
+  .divider {
+    width: 32px;
+    height: 1px;
+    background: var(--rust);
+    margin: 10px auto 0;
+  }
+
+  .calendars {
+    display: flex;
+    flex-direction: column;
+    gap: 10mm;
+  }
+
+  .month-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    margin-bottom: 5mm;
+    padding-bottom: 3mm;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .month-title .year-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  .dow {
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding: 5px 0 6px;
+    font-weight: 400;
+  }
+
+  .dow.sun { color: var(--rust); }
+  .dow.sat { color: var(--sat); }
+
+  .day {
+    text-align: center;
+    padding: 10px 4px;
+    font-size: 13px;
+    border-radius: 3px;
+  }
+
+  .day.empty { background: none; }
+
+  .day.open {
+    background: white;
+    color: var(--ink);
+  }
+
+  .day.closed {
+    background: var(--closed-red);
+    color: var(--closed-text);
+  }
+
+  .day.sun.open  { color: var(--rust); }
+  .day.sat.open  { color: var(--sat); }
+
+  .day.today {
+    outline: 1.5px solid var(--rust);
+    outline-offset: -1px;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 9mm;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .swatch-open   { background: white; border: 1px solid var(--line); }
+  .swatch-closed { background: var(--closed-red); border: 1px solid #e0c4bc; }
+
+  footer {
+    text-align: center;
+    margin-top: 9mm;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+
+  @media print {
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Pasta no Marco</div>
+  <h1>営業カレンダー</h1>
+  <div class="subtitle">2026 MAY — JUNE</div>
+  <div class="divider"></div>
+</header>
+
+<div class="calendars" id="calendars"></div>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch swatch-open"></div>
+    <span>営業日</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch swatch-closed"></div>
+    <span>定休日・臨時休業</span>
+  </div>
+</div>
+
+<footer>
+  <p>毎週木曜日定休　／　パスタのマルコ</p>
+</footer>
+
+<script>
+  const closedDates = {
+    5: new Set([1,2,3,4,5,6,7,13,14,21,28]),
+    6: new Set([3,4,11,18,25])
+  };
+
+  function isClosed(year, month, day) {
+    const d = new Date(year, month - 1, day);
+    if (d.getDay() === 4) return true;
+    if (closedDates[month] && closedDates[month].has(day)) return true;
+    return false;
+  }
+
+  function isToday(year, month, day) {
+    const now = new Date();
+    return now.getFullYear() === year && now.getMonth()+1 === month && now.getDate() === day;
+  }
+
+  function buildMonth(year, month, monthName) {
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    const block = document.createElement('div');
+    block.className = 'month-block';
+
+    const title = document.createElement('div');
+    title.className = 'month-title';
+    title.innerHTML = `${monthName}<span class="year-label">${year}</span>`;
+    block.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    const dows = ['日','月','火','水','木','金','土'];
+    const dowClasses = ['sun','','','','','','sat'];
+    dows.forEach((d, i) => {
+      const el = document.createElement('div');
+      el.className = 'dow' + (dowClasses[i] ? ' ' + dowClasses[i] : '');
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    for (let i = 0; i < firstDay; i++) {
+      const el = document.createElement('div');
+      el.className = 'day empty';
+      grid.appendChild(el);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dow = (firstDay + d - 1) % 7;
+      const closed = isClosed(year, month, d);
+      const today = isToday(year, month, d);
+
+      const el = document.createElement('div');
+      let cls = 'day';
+      if (dow === 0) cls += ' sun';
+      if (dow === 6) cls += ' sat';
+      cls += closed ? ' closed' : ' open';
+      if (today) cls += ' today';
+      el.className = cls;
+      el.textContent = d;
+      grid.appendChild(el);
+    }
+
+    block.appendChild(grid);
+    return block;
+  }
+
+  const container = document.getElementById('calendars');
+  container.appendChild(buildMonth(2026, 5, '5月'));
+  container.appendChild(buildMonth(2026, 6, '6月'));
+</script>
+</body>
+</html>
