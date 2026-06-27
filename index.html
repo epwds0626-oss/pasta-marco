@@ -249,9 +249,7 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 .cal-day.today::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--ollt)}
 .cal-day.selected{background:var(--ink)!important;color:var(--w)!important}
 .cal-day.selected:hover{background:var(--sea)!important}
-/* 定休日（木曜・毎週）*/
 .cal-day.closed-weekly{color:rgba(17,16,9,.18)!important;cursor:not-allowed;background:rgba(17,16,9,.03)!important}
-/* 特定休業日 */
 .cal-day.closed-special{color:rgba(160,50,50,.3)!important;cursor:not-allowed;background:rgba(160,50,50,.05)!important}
 .cal-day.disabled-past{color:rgba(17,16,9,.15)!important;cursor:not-allowed;background:none!important}
 .cal-day.empty{cursor:default;color:transparent!important;background:none!important}
@@ -539,7 +537,9 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
       <span class="tlbl">Reservation</span>
       <div class="trule"></div>
       <div class="textra">
-        <p class="res-note">当日予約は午前10:30まで受付（自動確定）&nbsp; キャンセルは <a href="mailto:epw.ds0626@gmail.com?subject=【パスタのマルコ】予約キャンセル">epw.ds0626@gmail.com</a> まで</p>
+        <!-- ▼▼▼ 修正箇所①：注意書き追加 ▼▼▼ -->
+        <p class="res-note">当日予約は午前10:30まで受付（自動確定）&nbsp; キャンセルは <a href="mailto:epw.ds0626@gmail.com?subject=【パスタのマルコ】予約キャンセル">epw.ds0626@gmail.com</a> まで<br>※ご予約後、確認メールを自動送信します。届かない場合は迷惑メールフォルダをご確認ください（iCloud・Hotmail・Yahooメールをご利用の方は特にご注意ください）。</p>
+        <!-- ▲▲▲ 修正箇所① ▲▲▲ -->
         <div class="rform" id="resForm">
           <div class="rf"><label class="rl">氏名<em>必須</em></label><input type="text" class="ri" id="rName" placeholder="山田 太郎"></div>
           <div class="rf"><label class="rl">電話<em>必須</em></label><input type="tel" class="ri" id="rPhone" placeholder="090-0000-0000"></div>
@@ -627,10 +627,7 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 // カスタムカレンダー設定
 // =====================================================
 const CAL_CONFIG = {
-  // 定休日：曜日指定（0=日, 1=月, ..., 4=木, 6=土）
-  closedWeekdays: [4], // 木曜日
-
-  // 特定休業日：'YYYY-MM-DD' 形式で列挙
+  closedWeekdays: [4],
   closedDates: [
     '2026-05-01','2026-05-02','2026-05-03','2026-05-04',
     '2026-05-05','2026-05-06','2026-05-07',
@@ -639,8 +636,6 @@ const CAL_CONFIG = {
     '2026-07-01',
     '2026-07-22'
   ],
-
-  // 予約可能な最大先日数（今日から何日後まで）
   maxAdvanceDays: 90
 };
 
@@ -668,19 +663,9 @@ const CAL_CONFIG = {
   function toDateStr(y,m,d){
     return y+'-'+(String(m+1).padStart(2,'0'))+'-'+(String(d).padStart(2,'0'));
   }
-
-  function isClosedWeekday(date){
-    return CAL_CONFIG.closedWeekdays.includes(date.getDay());
-  }
-
-  function isClosedSpecial(dateStr){
-    return CAL_CONFIG.closedDates.includes(dateStr);
-  }
-
-  function isPast(date){
-    return date < today;
-  }
-
+  function isClosedWeekday(date){ return CAL_CONFIG.closedWeekdays.includes(date.getDay()); }
+  function isClosedSpecial(dateStr){ return CAL_CONFIG.closedDates.includes(dateStr); }
+  function isPast(date){ return date < today; }
   function isTooFar(date){
     const limit = new Date(today);
     limit.setDate(limit.getDate() + CAL_CONFIG.maxAdvanceDays);
@@ -690,39 +675,26 @@ const CAL_CONFIG = {
   function renderCalendar(){
     myLabel.textContent = calYear + '年 ' + MONTHS_JP[calMonth];
     daysEl.innerHTML = '';
-
     const firstDay = new Date(calYear, calMonth, 1).getDay();
     const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-
-    // 空白セル
     for(let i=0;i<firstDay;i++){
       const empty = document.createElement('div');
       empty.className='cal-day empty';
       daysEl.appendChild(empty);
     }
-
     for(let d=1;d<=daysInMonth;d++){
       const date    = new Date(calYear, calMonth, d);
       const dateStr = toDateStr(calYear, calMonth, d);
       const dow     = date.getDay();
-
       const cell = document.createElement('div');
       cell.className = 'cal-day';
       cell.textContent = d;
-
-      // 曜日クラス
       if(dow===0) cell.classList.add('sun');
       if(dow===6) cell.classList.add('sat');
-
-      // 今日
       if(dateStr === toDateStr(today.getFullYear(), today.getMonth(), today.getDate())){
         cell.classList.add('today');
       }
-
-      // 選択済み
       if(selectedDate === dateStr) cell.classList.add('selected');
-
-      // 無効判定
       if(isPast(date)){
         cell.classList.add('disabled-past');
       } else if(isTooFar(date)){
@@ -740,14 +712,10 @@ const CAL_CONFIG = {
         lbl.textContent='休業';
         cell.appendChild(lbl);
       } else {
-        // 選択可能
         cell.addEventListener('click', ()=>selectDate(dateStr, d));
       }
-
       daysEl.appendChild(cell);
     }
-
-    // 前月・翌月ナビ制御
     const prevDate = new Date(calYear, calMonth, 0);
     prevBtn.disabled = prevDate < today;
     prevBtn.style.opacity = prevBtn.disabled ? '.2' : '';
@@ -757,18 +725,13 @@ const CAL_CONFIG = {
   function selectDate(dateStr, d){
     selectedDate = dateStr;
     hiddenInp.value = dateStr;
-
-    // 表示テキスト更新（日本語）
     const [y,m,dd] = dateStr.split('-').map(Number);
     const weekDays = ['日','月','火','水','木','金','土'];
     const dow = new Date(y,m-1,dd).getDay();
     displayTxt.textContent = y+'年'+m+'月'+dd+'日（'+weekDays[dow]+'）';
     displayTxt.classList.remove('placeholder');
-
     closePicker();
     renderCalendar();
-
-    // 空席状況を取得
     loadVac(dateStr);
   }
 
@@ -957,8 +920,6 @@ dmask.addEventListener('click',closeDrawer);
 // =====================================================
 const GAS='https://script.google.com/macros/s/AKfycbyyPLz-i2uC2TTxH-K4zrDU20NVFgEgQD-q2pQjSNt7fUnnj3kIHBc2Cn5DPAZ6PMCsOg/exec';
 
-// GAS の buildStatusPayload_ は slots キーにスロット文字列を使う
-// 例: data.slots["11:00〜12:30"].label
 const SLOT_KEYS = ['11:00〜12:30','13:00〜14:30','15:00〜16:00'];
 function vcInfo(label){
   return({
@@ -970,7 +931,6 @@ function vcInfo(label){
   }[label])||['tb-closed','受付終了'];
 }
 function loadVac(d){
-  // status API は ?action=status&date=YYYY-MM-DD&callback=xxx
   const cb='vc'+Date.now();
   const sc=document.createElement('script');
   sc.src=`${GAS}?action=status&date=${d}&callback=${cb}`;
@@ -992,9 +952,8 @@ function loadVac(d){
 document.getElementById('rSubmit').addEventListener('click',async()=>{
   const V=id=>document.getElementById(id).value.trim();
   const name=V('rName'),phone=V('rPhone'),email=V('rEmail'),date=V('rDate');
-  // time の値は例: "11:00〜12:30　枠1" → スロット部分だけ切り出す
   const timeRaw=(document.querySelector('input[name="rt"]:checked')||{}).value||'';
-  const time_slot = timeRaw.split('\u3000')[0].trim(); // 全角スペース前がスロット文字列
+  const time_slot = timeRaw.split('\u3000')[0].trim();
   const guests=document.getElementById('rGuests').value,notes=V('rNotes');
   const msg=document.getElementById('rMsg'),btn=document.getElementById('rSubmit');
   if(!name||!phone||!email||!date||!time_slot||!guests){
@@ -1002,7 +961,6 @@ document.getElementById('rSubmit').addEventListener('click',async()=>{
   }
   btn.disabled=true;msg.textContent='送信中…';msg.className='rmsg';
   try{
-    // GAS は no-cors + JSON body が通らないため FormData で送信
     const fd = new FormData();
     fd.append('source',     'jimdo_marco_reservation');
     fd.append('name',       name);
@@ -1013,8 +971,10 @@ document.getElementById('rSubmit').addEventListener('click',async()=>{
     fd.append('party_size', guests);
     fd.append('notes',      notes);
     await fetch(GAS, {method:'POST', mode:'no-cors', body: fd});
-    // no-cors では res.ok が読めないため、送信完了を成功とみなす
-    msg.textContent='ご予約を受け付けました。確認メールをお送りします。';msg.className='rmsg ok';
+    // ▼▼▼ 修正箇所②：送信完了メッセージに注意書き追加 ▼▼▼
+    msg.textContent='ご予約を受け付けました。確認メールをお送りします。届かない場合は迷惑メールフォルダをご確認ください。';
+    // ▲▲▲ 修正箇所② ▲▲▲
+    msg.className='rmsg ok';
     ['rName','rEmail','rPhone','rNotes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('rDate').value='';
     document.getElementById('rGuests').value='';
