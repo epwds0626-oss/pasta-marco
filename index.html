@@ -147,6 +147,13 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 .tb-open{color:var(--olive);border-color:#b8cd80}.tb-few{color:#8a6a18;border-color:#c8aa58}.tb-full{color:#903838;border-color:#d09090}
 .tb-closed{color:rgba(17,16,9,.28);border-color:var(--cream)}.tb-load{color:rgba(17,16,9,.28);border-color:var(--cream);animation:pulse 1.5s infinite}
 .res-note{padding:18px 22px;border-left:2px solid var(--olive);background:var(--cream);font-size:12px;line-height:2;color:rgba(17,16,9,.5);margin-bottom:8px}
+.park-note{padding:20px 22px;border:1px solid var(--olive);border-radius:4px;background:#fbf9f4;margin-bottom:16px}
+.park-h{font-size:14px;font-weight:700;color:var(--olive);margin:0 0 8px;letter-spacing:.04em}
+.park-t{font-size:12.5px;line-height:1.9;color:rgba(17,16,9,.72);margin:0 0 14px}
+.park-t strong{color:#c0392b;font-weight:700}
+.park-map{max-width:360px;margin:0 auto}
+.park-map svg{width:100%;height:auto;display:block;border:1px solid rgba(17,16,9,.1);border-radius:4px;background:#fff}
+.park-cap{font-size:10.5px;color:rgba(17,16,9,.45);margin:6px 0 0;text-align:center}
 .res-note a{color:var(--olive)}
 .rsub{grid-column:1/-1;margin-top:8px;padding:16px;background:var(--ink);border:none;font-family:var(--cg);font-weight:300;font-size:13px;letter-spacing:.3em;color:var(--w);cursor:none;transition:background .25s}
 .rsub:hover{background:var(--sea)}.rsub:disabled{opacity:.4}
@@ -540,6 +547,41 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
         <!-- ▼▼▼ 修正箇所①：注意書き追加 ▼▼▼ -->
         <p class="res-note">当日予約は午前10:30まで受付（自動確定）&nbsp; キャンセルは <a href="mailto:epw.ds0626@gmail.com?subject=【パスタのマルコ】予約キャンセル">epw.ds0626@gmail.com</a> まで<br>※ご予約後、確認メールを自動送信します。届かない場合は迷惑メールフォルダをご確認ください（iCloud・Hotmail・Yahooメールをご利用の方は特にご注意ください）。</p>
         <!-- ▲▲▲ 修正箇所① ▲▲▲ -->
+
+        <!-- ▼▼▼ 駐車場のご案内 ▼▼▼ -->
+        <div class="park-note">
+          <p class="park-h">🅿 お車でお越しのお客様へ</p>
+          <p class="park-t">当店には専用駐車場がございません。<strong>隣接する「かに弥」様の駐車場へのお停めはご遠慮ください。</strong>お手数ですが、店の周辺にある<strong>無料駐車場</strong>（下図◎印）をご利用ください。いずれも徒歩すぐです。皆さまに気持ちよくお過ごしいただくため、ご協力をお願いいたします。</p>
+          <div class="park-map">
+            <svg viewBox="0 0 340 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="マルコ周辺の無料駐車場イメージ図">
+              <rect x="70" y="10" width="150" height="40" rx="5" fill="#5c6b2e"/>
+              <text x="145" y="28" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">無料駐車場</text>
+              <text x="145" y="43" text-anchor="middle" font-size="10" fill="#dfe6c8">◎ OK</text>
+              <rect x="278" y="70" width="46" height="150" rx="5" fill="#5c6b2e"/>
+              <text x="301" y="145" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold" transform="rotate(90 301 145)">無料駐車場 ◎ OK</text>
+              <rect x="40" y="258" width="220" height="40" rx="5" fill="#5c6b2e"/>
+              <text x="150" y="276" text-anchor="middle" font-size="12" fill="#fff" font-weight="bold">無料駐車場</text>
+              <text x="150" y="291" text-anchor="middle" font-size="10" fill="#dfe6c8">◎ OK</text>
+              <rect x="120" y="70" width="90" height="40" rx="4" fill="#efe9dd" stroke="#cbbf9f" stroke-width="1"/>
+              <text x="165" y="94" text-anchor="middle" font-size="11" fill="#7a6f56">浜いち様</text>
+              <rect x="120" y="118" width="90" height="42" rx="4" fill="#b09a5a"/>
+              <text x="165" y="144" text-anchor="middle" font-size="13" fill="#fff" font-weight="bold">マルコ</text>
+              <rect x="120" y="168" width="90" height="42" rx="4" fill="#efe9dd" stroke="#cbbf9f" stroke-width="1"/>
+              <text x="165" y="193" text-anchor="middle" font-size="11" fill="#7a6f56">かに弥様</text>
+              <rect x="120" y="218" width="90" height="34" rx="4" fill="#efe9dd" stroke="#cbbf9f" stroke-width="1"/>
+              <text x="165" y="239" text-anchor="middle" font-size="10" fill="#7a6f56">かあちゃんの店様</text>
+              <path d="M165 118 L145 52" fill="none" stroke="#5c6b2e" stroke-width="2" stroke-dasharray="4 4"/>
+              <polygon points="145,50 141,62 152,58" fill="#5c6b2e"/>
+              <path d="M210 139 L276 145" fill="none" stroke="#5c6b2e" stroke-width="2" stroke-dasharray="4 4"/>
+              <polygon points="278,145 266,140 268,151" fill="#5c6b2e"/>
+              <path d="M165 160 L155 256" fill="none" stroke="#5c6b2e" stroke-width="2" stroke-dasharray="4 4"/>
+              <polygon points="155,258 149,247 161,248" fill="#5c6b2e"/>
+            </svg>
+            <p class="park-cap">※位置関係のイメージ図です。正確な場所は現地の案内看板をご確認ください。</p>
+          </div>
+        </div>
+        <!-- ▲▲▲ 駐車場のご案内 ▲▲▲ -->
+
         <div class="rform" id="resForm">
           <div class="rf"><label class="rl">氏名<em>必須</em></label><input type="text" class="ri" id="rName" placeholder="山田 太郎"></div>
           <div class="rf"><label class="rl">電話<em>必須</em></label><input type="tel" class="ri" id="rPhone" placeholder="090-0000-0000"></div>
@@ -576,13 +618,16 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 
           <div class="rf full"><label class="rl">予約時間<em>必須</em></label>
             <div class="topts">
-              <label class="topt"><input type="radio" name="rt" value="11:00〜12:30　枠1"><span class="tdot"></span><span class="ttext">11:00 — 12:30　枠 1</span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
-              <label class="topt"><input type="radio" name="rt" value="13:00〜14:30　枠2"><span class="tdot"></span><span class="ttext">13:00 — 14:30　枠 2</span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
-              <label class="topt"><input type="radio" name="rt" value="15:00〜16:00　枠3"><span class="tdot"></span><span class="ttext">15:00 — 16:00　枠 3</span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="11:00〜12:30　枠1"><span class="tdot"></span><span class="ttext">11:00 <small>ご来店</small> — 12:30 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="13:00〜14:30　枠2"><span class="tdot"></span><span class="ttext">13:00 <small>ご来店</small> — 14:30 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="15:00〜16:00　枠3"><span class="tdot"></span><span class="ttext">15:00 <small>ご来店</small> — 16:00 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
             </div>
           </div>
-          <div class="rf"><label class="rl">人数<em>必須</em></label>
-            <select class="rs" id="rGuests"><option value="">— 選択 —</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名以上</option></select>
+          <div class="rf"><label class="rl">大人の人数<em>必須</em></label>
+            <select class="rs" id="rAdults"><option value="">— 選択 —</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名</option><option>6名</option><option>7名</option><option>8名</option></select>
+          </div>
+          <div class="rf"><label class="rl">小人（お子様）の人数</label>
+            <select class="rs" id="rChildren"><option>0名</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名</option><option>6名</option></select>
           </div>
           <div class="rf"><label class="rl">備考</label><textarea class="rt" id="rNotes" placeholder="アレルギー / 席の希望など"></textarea></div>
           <button class="rsub" id="rSubmit">予約を送信する（自動確定）</button>
@@ -957,9 +1002,10 @@ document.getElementById('rSubmit').addEventListener('click',async()=>{
   const name=V('rName'),phone=V('rPhone'),email=V('rEmail'),date=V('rDate');
   const timeRaw=(document.querySelector('input[name="rt"]:checked')||{}).value||'';
   const time_slot = timeRaw.split('\u3000')[0].trim();
-  const guests=document.getElementById('rGuests').value,notes=V('rNotes');
+  const adults=document.getElementById('rAdults').value,children=document.getElementById('rChildren').value||'0名',notes=V('rNotes');
+  const guests = adults ? ('大人'+adults+'　小人'+children) : '';
   const msg=document.getElementById('rMsg'),btn=document.getElementById('rSubmit');
-  if(!name||!phone||!email||!date||!time_slot||!guests){
+  if(!name||!phone||!email||!date||!time_slot||!adults){
     msg.textContent='必須項目をすべて入力してください。';msg.className='rmsg ng';return;
   }
   btn.disabled=true;msg.textContent='送信中…';msg.className='rmsg';
@@ -980,7 +1026,7 @@ document.getElementById('rSubmit').addEventListener('click',async()=>{
     msg.className='rmsg ok';
     ['rName','rEmail','rPhone','rNotes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('rDate').value='';
-    document.getElementById('rGuests').value='';
+    document.getElementById('rAdults').value='';document.getElementById('rChildren').value='0名';
     document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
     document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load'});
     document.getElementById('calDisplayText').textContent='日付を選択してください';
