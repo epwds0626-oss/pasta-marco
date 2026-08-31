@@ -480,8 +480,8 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 
         <p class="photo-gallery-label" style="margin-top:0">営業カレンダー</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px">
-          <img src="https://epwds0626-oss.github.io/pasta-marco/20260705_103014281_iOS.png" alt="8月営業カレンダー（葉月）" style="width:100%;display:block;border:1px solid rgba(17,16,9,.08)">
           <img src="https://epwds0626-oss.github.io/pasta-marco/2026.9.png" alt="9月営業カレンダー（長月）" style="width:100%;display:block;border:1px solid rgba(17,16,9,.08)">
+          <img src="https://epwds0626-oss.github.io/pasta-marco/2026.10.png" alt="10月営業カレンダー（神無月）" style="width:100%;display:block;border:1px solid rgba(17,16,9,.08)">
         </div>
 
         <p class="photo-gallery-label" style="margin-top:36px">New Menu</p>
@@ -673,8 +673,11 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 // カスタムカレンダー設定
 // =====================================================
 const CAL_CONFIG = {
-  closedWeekdays: [4],
-  closedDates: [
+  closedWeekdays: [4],           // 木曜を定休（自動休業）
+  openDates: [                   // 定休曜日でも「営業する日」の例外リスト（closedWeekdaysより優先）
+    '2026-10-01'                 // 10/1(木)は営業
+  ],
+  closedDates: [                 // 曜日に関係なく休業する日（openDatesより優先）
     '2026-05-01','2026-05-02','2026-05-03','2026-05-04',
     '2026-05-05','2026-05-06','2026-05-07',
     '2026-05-13',
@@ -686,7 +689,8 @@ const CAL_CONFIG = {
     '2026-08-19',
     '2026-09-02','2026-09-03',
     '2026-09-16','2026-09-18','2026-09-19','2026-09-20',
-    '2026-09-21','2026-09-22','2026-09-23','2026-09-30'
+    '2026-09-21','2026-09-22','2026-09-23','2026-09-30',
+    '2026-10-08','2026-10-21'    // 10月：赤字のうち木曜以外の休業日
   ],
   maxAdvanceDays: 90
 };
@@ -715,7 +719,8 @@ const CAL_CONFIG = {
   function toDateStr(y,m,d){
     return y+'-'+(String(m+1).padStart(2,'0'))+'-'+(String(d).padStart(2,'0'));
   }
-  function isClosedWeekday(date){ return CAL_CONFIG.closedWeekdays.includes(date.getDay()); }
+  function isForceOpen(dateStr){ return CAL_CONFIG.openDates.includes(dateStr); }
+  function isClosedWeekday(date, dateStr){ return CAL_CONFIG.closedWeekdays.includes(date.getDay()) && !isForceOpen(dateStr); }
   function isClosedSpecial(dateStr){ return CAL_CONFIG.closedDates.includes(dateStr); }
   function isPast(date){ return date < today; }
   function isTooFar(date){
@@ -751,17 +756,17 @@ const CAL_CONFIG = {
         cell.classList.add('disabled-past');
       } else if(isTooFar(date)){
         cell.classList.add('disabled-past');
-      } else if(isClosedWeekday(date)){
-        cell.classList.add('closed-weekly');
-        const lbl = document.createElement('span');
-        lbl.style.cssText='display:block;font-size:8px;letter-spacing:.1em;color:rgba(17,16,9,.2);margin-top:1px';
-        lbl.textContent='定休';
-        cell.appendChild(lbl);
       } else if(isClosedSpecial(dateStr)){
         cell.classList.add('closed-special');
         const lbl = document.createElement('span');
         lbl.style.cssText='display:block;font-size:8px;letter-spacing:.1em;color:rgba(160,50,50,.35);margin-top:1px';
         lbl.textContent='休業';
+        cell.appendChild(lbl);
+      } else if(isClosedWeekday(date, dateStr)){
+        cell.classList.add('closed-weekly');
+        const lbl = document.createElement('span');
+        lbl.style.cssText='display:block;font-size:8px;letter-spacing:.1em;color:rgba(17,16,9,.2);margin-top:1px';
+        lbl.textContent='定休';
         cell.appendChild(lbl);
       } else {
         cell.addEventListener('click', ()=>selectDate(dateStr, d));
