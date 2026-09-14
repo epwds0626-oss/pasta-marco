@@ -545,11 +545,8 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
       <span class="tlbl">Reservation</span>
       <div class="trule"></div>
       <div class="textra">
-        <!-- ▼▼▼ 修正箇所①：注意書き追加 ▼▼▼ -->
         <p class="res-note">当日予約は午前10:30まで受付（自動確定）&nbsp; キャンセルは <a href="mailto:epw.ds0626@gmail.com?subject=【パスタのマルコ】予約キャンセル">epw.ds0626@gmail.com</a> まで<br>※ご予約後、確認メールを自動送信します。届かない場合は迷惑メールフォルダをご確認ください（iCloud・Hotmail・Yahooメールをご利用の方は特にご注意ください）。</p>
-        <!-- ▲▲▲ 修正箇所① ▲▲▲ -->
 
-        <!-- ▼▼▼ 駐車場のご案内 ▼▼▼ -->
         <div class="park-note">
           <p class="park-h">🅿 お車でお越しのお客様へ</p>
           <p class="park-t">当店には専用駐車場がございません。<strong>隣接する「かに弥」様の駐車場へのお停めはご遠慮ください。</strong>お手数ですが、店の周辺にある<strong>無料駐車場</strong>（下図◎印）をご利用ください。いずれも徒歩すぐです。皆さまに気持ちよくお過ごしいただくため、ご協力をお願いいたします。</p>
@@ -581,14 +578,12 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
             <p class="park-cap">※位置関係のイメージ図です。正確な場所は現地の案内看板をご確認ください。</p>
           </div>
         </div>
-        <!-- ▲▲▲ 駐車場のご案内 ▲▲▲ -->
 
         <div class="rform" id="resForm">
           <div class="rf"><label class="rl">氏名<em>必須</em></label><input type="text" class="ri" id="rName" placeholder="山田 太郎"></div>
           <div class="rf"><label class="rl">電話<em>必須</em></label><input type="tel" class="ri" id="rPhone" placeholder="090-0000-0000"></div>
           <div class="rf"><label class="rl">メール<em>必須</em></label><input type="email" class="ri" id="rEmail" placeholder="example@mail.com"></div>
 
-          <!-- ▼▼▼ カスタムカレンダー ▼▼▼ -->
           <div class="rf full" id="rf-date">
             <label class="rl">予約日<em>必須</em></label>
             <div class="cal-wrap" id="calWrap">
@@ -615,7 +610,6 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
             </div>
             <input type="hidden" id="rDate">
           </div>
-          <!-- ▲▲▲ カスタムカレンダー ▲▲▲ -->
 
           <div class="rf full"><label class="rl">予約時間<em>必須</em></label>
             <div class="topts">
@@ -673,11 +667,11 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 // カスタムカレンダー設定
 // =====================================================
 const CAL_CONFIG = {
-  closedWeekdays: [4],           // 木曜を定休（自動休業）
-  openDates: [                   // 定休曜日でも「営業する日」の例外リスト（closedWeekdaysより優先）
-    '2026-10-01'                 // 10/1(木)は営業（9/30休業の振替）
+  closedWeekdays: [4],
+  openDates: [
+    '2026-10-01'
   ],
-  closedDates: [                 // 曜日に関係なく休業する日（openDatesより優先）
+  closedDates: [
     '2026-05-01','2026-05-02','2026-05-03','2026-05-04',
     '2026-05-05','2026-05-06','2026-05-07',
     '2026-05-13',
@@ -690,7 +684,7 @@ const CAL_CONFIG = {
     '2026-09-02','2026-09-03',
     '2026-09-16','2026-09-18','2026-09-19','2026-09-20',
     '2026-09-21','2026-09-22','2026-09-23',
-    '2026-10-07','2026-10-08','2026-10-21'    // 10月：赤字のうち木曜以外の休業日
+    '2026-10-07','2026-10-08','2026-10-21'
   ],
   maxAdvanceDays: 90
 };
@@ -973,7 +967,7 @@ hamb.addEventListener('click',()=>{const o=drawer.classList.toggle('open');dmask
 dmask.addEventListener('click',closeDrawer);
 
 // =====================================================
-// 予約フォーム送信 / 空席取得
+// 予約フォーム送信 / 空席取得（v10: JSONP化）
 // =====================================================
 const GAS='https://script.google.com/macros/s/AKfycbyyPLz-i2uC2TTxH-K4zrDU20NVFgEgQD-q2pQjSNt7fUnnj3kIHBc2Cn5DPAZ6PMCsOg/exec';
 
@@ -1006,44 +1000,112 @@ function loadVac(d){
   document.body.appendChild(sc);
 }
 
-document.getElementById('rSubmit').addEventListener('click',async()=>{
+// NGコード → 画面メッセージ
+function reserveNgMessage(code){
+  switch(code){
+    case 'full_public':
+    case 'full_actual':
+      return 'この時間は満席になりました。別の時間をお選びください。';
+    case 'cutoff':
+      return '当日のご予約受付は終了しました（10:30まで）。';
+    case 'closed':
+      return 'その日は休業日です。別の日をお選びください。';
+    case 'missing':
+      return '必須項目をすべて入力してください。';
+    default:
+      return '送信に失敗しました。時間をおいて再度お試しください。';
+  }
+}
+
+// JSONPで status を1件取得（送信直前チェック用）
+function fetchStatusOnce(dateStr){
+  return new Promise((resolve)=>{
+    const cb='vchk'+Date.now();
+    const sc=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{ if(sc.parentNode) sc.parentNode.removeChild(sc); delete window[cb]; };
+    window[cb]=data=>{ if(done)return; done=true; cleanup(); resolve(data||null); };
+    sc.onerror=()=>{ if(done)return; done=true; cleanup(); resolve(null); };
+    sc.src=`${GAS}?action=status&date=${encodeURIComponent(dateStr)}&callback=${cb}`;
+    document.body.appendChild(sc);
+    setTimeout(()=>{ if(done)return; done=true; cleanup(); resolve(null); }, 8000);
+  });
+}
+
+// JSONPで予約送信（応答を受け取る）
+function sendReserveJsonp(params){
+  return new Promise((resolve)=>{
+    const cb='vrsv'+Date.now();
+    const sc=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{ if(sc.parentNode) sc.parentNode.removeChild(sc); delete window[cb]; };
+    window[cb]=data=>{ if(done)return; done=true; cleanup(); resolve(data||{ok:false,code:'error'}); };
+    sc.onerror=()=>{ if(done)return; done=true; cleanup(); resolve({ok:false,code:'network'}); };
+    const qs=Object.keys(params).map(k=>`${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`).join('&');
+    sc.src=`${GAS}?action=reserve&${qs}&callback=${cb}`;
+    document.body.appendChild(sc);
+    setTimeout(()=>{ if(done)return; done=true; cleanup(); resolve({ok:false,code:'timeout'}); }, 12000);
+  });
+}
+
+document.getElementById('rSubmit').addEventListener('click', async ()=>{
   const V=id=>document.getElementById(id).value.trim();
-  const name=V('rName'),phone=V('rPhone'),email=V('rEmail'),date=V('rDate');
+  const name=V('rName'), phone=V('rPhone'), email=V('rEmail'), date=V('rDate');
   const timeRaw=(document.querySelector('input[name="rt"]:checked')||{}).value||'';
   const time_slot = timeRaw.split('\u3000')[0].trim();
-  const adults=document.getElementById('rAdults').value,children=document.getElementById('rChildren').value||'0名',notes=V('rNotes');
+  const adults=document.getElementById('rAdults').value;
+  const children=document.getElementById('rChildren').value||'0名';
+  const notes=V('rNotes');
   const guests = adults ? ('大人'+adults+'　小人'+children) : '';
-  const msg=document.getElementById('rMsg'),btn=document.getElementById('rSubmit');
+  const msg=document.getElementById('rMsg'), btn=document.getElementById('rSubmit');
+
   if(!name||!phone||!email||!date||!time_slot||!adults){
-    msg.textContent='必須項目をすべて入力してください。';msg.className='rmsg ng';return;
+    msg.textContent='必須項目をすべて入力してください。'; msg.className='rmsg ng'; return;
   }
-  btn.disabled=true;msg.textContent='送信中…';msg.className='rmsg';
-  try{
-    const fd = new FormData();
-    fd.append('source',     'jimdo_marco_reservation');
-    fd.append('name',       name);
-    fd.append('email',      email);
-    fd.append('phone',      phone);
-    fd.append('date',       date);
-    fd.append('time_slot',  time_slot);
-    fd.append('party_size', guests);
-    fd.append('notes',      notes);
-    await fetch(GAS, {method:'POST', mode:'no-cors', body: fd});
-    // ▼▼▼ 修正箇所②：送信完了メッセージに注意書き追加 ▼▼▼
+
+  btn.disabled=true; msg.textContent='空席を確認中…'; msg.className='rmsg';
+
+  // 送信直前チェック: 選択枠が今も空いているか
+  const st = await fetchStatusOnce(date);
+  if(st && st.slots && st.slots[time_slot]){
+    if(st.slots[time_slot].formOpen === false){
+      msg.textContent='この時間は満席になりました。別の時間をお選びください。';
+      msg.className='rmsg ng';
+      btn.disabled=false;
+      loadVac(date);
+      return;
+    }
+  }
+
+  msg.textContent='送信中…'; msg.className='rmsg';
+
+  const res = await sendReserveJsonp({
+    source:'jimdo_marco_reservation',
+    name, email, phone, date,
+    time_slot,
+    party_size: guests,
+    notes
+  });
+
+  if(res && res.ok){
     msg.textContent='ご予約を受け付けました。確認メールをお送りします。届かない場合は迷惑メールフォルダをご確認ください。';
-    // ▲▲▲ 修正箇所② ▲▲▲
     msg.className='rmsg ok';
     ['rName','rEmail','rPhone','rNotes'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('rDate').value='';
-    document.getElementById('rAdults').value='';document.getElementById('rChildren').value='0名';
+    document.getElementById('rAdults').value='';
+    document.getElementById('rChildren').value='0名';
     document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
     document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load'});
     document.getElementById('calDisplayText').textContent='日付を選択してください';
     document.getElementById('calDisplayText').classList.add('placeholder');
-  }catch(err){
-    msg.textContent='送信に失敗しました。時間をおいて再度お試しください。';msg.className='rmsg ng';
-    console.error('reservation error:',err);
-  }finally{btn.disabled=false}
+  }else{
+    msg.textContent = reserveNgMessage(res && res.code);
+    msg.className='rmsg ng';
+    if(res && (res.code==='full_public'||res.code==='full_actual')){
+      loadVac(date);
+    }
+  }
+  btn.disabled=false;
 });
 </script>
 </body>
