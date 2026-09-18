@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>マルコ 休業日管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+/* =========================================================
+   パスタのマルコ 休業日管理（社内用）
+   パスタのマルコの黒×生成りの世界観を踏襲しつつ、月初に片手で使える帳場。
+   主役はカレンダーの升目そのもの。装飾は削り、状態は色で一目で分かる。
+   ========================================================= */
+:root{
+  --paper:#f7f4ee;      /* 生成りの紙 */
+  --ink:#1c1813;        /* 墨に近い黒 */
+  --ink-soft:#5c554a;   /* 弱い墨 */
+  --line:#ddd5c6;       /* 罫線 */
+  --line-strong:#b9af9c;
+  --card:#fffefb;
+  /* 状態色 */
+  --closed:#a6452e;     --closed-bg:#f2e2db;   /* 休業（煉瓦） */
+  --teikyu:#8a8075;     --teikyu-bg:#ece7dc;   /* 定休（木・静かな灰） */
+  --open:#4f6b3a;       --open-bg:#e5ecd9;     /* 特別営業（オリーブ） */
+  --biz:#fffefb;                                /* 営業（紙のまま） */
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Segoe UI",system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.6;
+  -webkit-font-smoothing:antialiased;padding-bottom:120px;
+}
+button{font-family:inherit;cursor:pointer}
+
+/* ===== ロック画面 ===== */
+#lock{position:fixed;inset:0;z-index:1000;background:var(--ink);display:flex;align-items:center;justify-content:center;padding:24px}
+#lock .box{width:min(360px,100%);text-align:center}
+#lock .mark{font-family:"Shippori Mincho",serif;font-weight:700;font-size:30px;letter-spacing:.18em;color:var(--paper)}
+#lock .sub{font-size:12px;color:#a89f8e;letter-spacing:.28em;margin:6px 0 30px}
+#lock input{width:100%;padding:14px;border:none;border-radius:2px;font-size:17px;text-align:center;letter-spacing:.12em;background:var(--paper);color:var(--ink);outline:none}
+#lock .err{color:#e8a08c;font-size:13px;height:20px;margin:10px 0 6px}
+#lock button{width:100%;padding:14px;background:var(--closed);color:#fff;border:none;border-radius:2px;font-size:15px;letter-spacing:.1em}
+#lock label{display:flex;gap:7px;align-items:center;justify-content:center;margin-top:16px;font-size:12px;color:#a89f8e;cursor:pointer}
+
+/* ===== ヘッダー ===== */
+header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40}
+.hd{max-width:640px;margin:0 auto;padding:14px 18px;display:flex;align-items:baseline;gap:12px}
+.hd .mark{font-family:"Shippori Mincho",serif;font-weight:700;font-size:19px;letter-spacing:.14em}
+.hd .role{font-size:11px;color:#a89f8e;letter-spacing:.2em}
+.hd .conn{margin-left:auto;font-size:11px;color:#a89f8e;display:flex;align-items:center;gap:6px}
+.hd .dot{width:7px;height:7px;border-radius:50%;background:#6b6459}
+.hd .dot.on{background:#7fb86a;box-shadow:0 0 7px #7fb86a}
+
+.wrap{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+
+/* ===== 月ナビ ===== */
+.monthbar{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 0 18px}
+.monthbar .m{font-family:"Shippori Mincho",serif;font-weight:700;font-size:24px;letter-spacing:.06em;min-width:180px;text-align:center}
+.monthbar button{width:42px;height:42px;border:1px solid var(--line-strong);background:var(--card);border-radius:2px;font-size:18px;color:var(--ink);line-height:1}
+.monthbar button:active{background:var(--line)}
+.today-btn{display:block;margin:0 auto 16px;padding:7px 18px;border:1px solid var(--line-strong);background:var(--card);border-radius:2px;font-size:13px;color:var(--ink-soft)}
+
+/* ===== カレンダー ===== */
+.cal{background:var(--card);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line)}
+.dow div{text-align:center;padding:9px 0;font-size:12px;color:var(--ink-soft)}
+.dow div.sun{color:var(--closed)}
+.dow div.sat{color:#3a5a86}
+.grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.cell{
+  aspect-ratio:1/1.05;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding-top:8px;gap:3px;position:relative;background:var(--biz);transition:background .12s;
+}
+.cell:nth-child(7n){border-right:none}
+.cell.blank{background:#faf8f3;cursor:default}
+.cell .d{font-size:16px;font-variant-numeric:tabular-nums;line-height:1}
+.cell .tag{font-size:10px;line-height:1.2;padding:1px 5px;border-radius:2px;letter-spacing:.02em}
+.cell.past{opacity:.4;pointer-events:none}
+.cell.tap{cursor:pointer}
+.cell.tap:active{background:var(--line)}
+.cell.today{box-shadow:inset 0 0 0 2px var(--ink)}
+/* 状態 */
+.cell.closed{background:var(--closed-bg)}
+.cell.closed .d{color:var(--closed);font-weight:700}
+.cell.closed .tag{background:var(--closed);color:#fff}
+.cell.teikyu{background:var(--teikyu-bg)}
+.cell.teikyu .d{color:var(--teikyu)}
+.cell.teikyu .tag{background:transparent;color:var(--teikyu);border:1px solid var(--teikyu)}
+.cell.open{background:var(--open-bg)}
+.cell.open .d{color:var(--open);font-weight:700}
+.cell.open .tag{background:var(--open);color:#fff}
+.cell .d.sun{color:var(--closed)}
+.cell .d.sat{color:#3a5a86}
+
+/* ===== 凡例 ===== */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:18px 2px 4px;font-size:12px;color:var(--ink-soft)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:14px;height:14px;border-radius:2px;display:inline-block;border:1px solid var(--line-strong)}
+.legend i.c-closed{background:var(--closed-bg);border-color:var(--closed)}
+.legend i.c-teikyu{background:var(--teikyu-bg)}
+.legend i.c-open{background:var(--open-bg);border-color:var(--open)}
+.legend i.c-biz{background:var(--biz)}
+.hint{margin:14px 2px 0;font-size:12px;color:var(--ink-soft);line-height:1.8}
+
+/* ===== 保存バー ===== */
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -3px 14px rgba(28,24,19,.07)}
+.savebar .in{max-width:640px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.savebar .status{font-size:13px;color:var(--ink-soft);flex:1;min-width:0}
+.savebar .status b{color:var(--closed)}
+.savebar button{padding:13px 26px;border:none;border-radius:2px;font-size:15px;letter-spacing:.08em;font-weight:600}
+.save{background:var(--ink);color:var(--paper)}
+.save:disabled{opacity:.35}
+.save.dirty{background:var(--closed)}
+
+/* ===== トースト ===== */
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:2px;font-size:14px;box-shadow:0 6px 20px rgba(28,24,19,.3);animation:tin .25s}
+.toast.ok{background:var(--open)}
+.toast.err{background:var(--closed)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+@media(max-width:480px){
+  .cell .d{font-size:15px}
+  .cell .tag{font-size:9px;padding:1px 4px}
+  .monthbar .m{font-size:21px;min-width:150px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ========== ロック画面 ========== -->
+<div id="lock">
+  <div class="box">
+    <div class="mark">Marco</div>
+    <div class="sub">休 業 日 管 理</div>
+    <input type="password" id="lockInput" placeholder="合言葉" onkeydown="if(event.key==='Enter')checkLock()" autocomplete="current-password">
+    <div class="err" id="lockErr"></div>
+    <button onclick="checkLock()">入る</button>
+    <label><input type="checkbox" id="lockRemember" checked> この端末で記憶する</label>
+  </div>
+</div>
+
+<header>
+  <div class="hd">
+    <span class="mark">Marco</span>
+    <span class="role">休業日管理</span>
+    <span class="conn"><span class="dot" id="dot"></span><span id="connTxt">接続中…</span></span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="monthbar">
+    <button onclick="moveMonth(-1)" aria-label="前の月">‹</button>
+    <div class="m" id="monthLabel">—</div>
+    <button onclick="moveMonth(1)" aria-label="次の月">›</button>
+  </div>
+  <button class="today-btn" onclick="goToday()">今月に戻る</button>
+
+  <div class="cal">
+    <div class="dow">
+      <div class="sun">日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div class="sat">土</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="legend">
+    <span><i class="c-biz"></i>営業</span>
+    <span><i class="c-closed"></i>休業（臨時）</span>
+    <span><i class="c-teikyu"></i>定休（木）</span>
+    <span><i class="c-open"></i>特別営業</span>
+  </div>
+  <p class="hint">
+    日付をタップして切り替えます。営業日 → タップで「休業」。木曜（定休）→ タップで「特別営業」。もう一度タップで元に戻ります。<br>
+    変更したら下の <b>保存する</b> を押してください。押すまで予約サイトには反映されません。
+  </p>
+</div>
+
+<!-- ========== 保存バー ========== -->
+<div class="savebar">
+  <div class="in">
+    <div class="status" id="saveStatus">読み込み中…</div>
+    <button class="save" id="saveBtn" onclick="save()" disabled>保存する</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =======================================================================
+   設定 — ここだけ必要なら変える
+   ======================================================================= */
+
+// ▼ 合言葉（この画面に入るためのパスワード）。変えるときはここを書き換える。
+const ADMIN_PASS = "marco2026";
+
+// ▼ 定休の曜日（0=日 1=月 2=火 3=水 4=木 5=金 6=土）。マルコは木曜定休なので [4]。
+const CLOSED_WEEKDAYS = [4];
+
+// ▼ データの保存先（Firebase）。予約サイト側も同じ設定・同じパスを読む。
+//    いまは FishHack と同じFirebaseプロジェクトのなかにマルコのデータをmarco/以下で持つ。
+//    専用プロジェクトに分けたくなったら、この config だけ差し替えればよい。
+const firebaseConfig = {
+  apiKey:"AIzaSyAqj6fqslQyexb2AcDm09oDPKUK5dq857s",
+  authDomain:"fishhack-74de3.firebaseapp.com",
+  databaseURL:"https://fishhack-74de3-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"fishhack-74de3",
+  storageBucket:"fishhack-74de3.firebasestorage.app",
+  messagingSenderId:"1083972133446",
+  appId:"1:1083972133446:web:576fd1c22ec4b6868ca047"
+};
+const DB_PATH = "marco/calendar"; // { closedDates:[...], openDates:[...], updatedAt: ... }
+
+/* =======================================================================
+   以下、通常は触らない
+   ======================================================================= */
+
+let db=null;
+try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); }
+catch(e){ console.error(e); }
+
+// 状態（Firebaseから読んだ確定値 = saved、編集中 = cur）
+let saved={closed:new Set(),open:new Set()};
+let cur  ={closed:new Set(),open:new Set()};
+let view=new Date(); view.setDate(1);
+
+/* ---- ロック ---- */
+const LOCK_KEY="marco_admin_unlocked";
+function checkLock(){
+  const v=document.getElementById('lockInput').value;
+  if(v===ADMIN_PASS){
+    if(document.getElementById('lockRemember').checked){ try{localStorage.setItem(LOCK_KEY,'1');}catch(e){} }
+    unlock();
+  }else{
+    document.getElementById('lockErr').textContent='合言葉が違います';
+    document.getElementById('lockInput').value='';
+    document.getElementById('lockInput').focus();
+  }
+}
+function unlock(){ document.getElementById('lock').style.display='none'; start(); }
+window.addEventListener('DOMContentLoaded',()=>{
+  let ok=false; try{ok=localStorage.getItem(LOCK_KEY)==='1';}catch(e){}
+  if(ok)unlock(); else setTimeout(()=>document.getElementById('lockInput').focus(),100);
+});
+
+/* ---- 起動 ---- */
+let started=false;
+function start(){
+  if(started)return; started=true;
+  if(!db){ setConn(false); toast('Firebaseに接続できません','err'); return; }
+  db.ref(DB_PATH).on('value',snap=>{
+    setConn(true);
+    const d=snap.val()||{};
+    saved.closed=new Set(d.closedDates||[]);
+    saved.open =new Set(d.openDates||[]);
+    // 編集中でなければ、読み込んだ値を編集面にも反映
+    if(!isDirty()){ cur.closed=new Set(saved.closed); cur.open=new Set(saved.open); }
+    render();
+  },err=>{ setConn(false); toast('読み込みに失敗しました','err'); console.error(err); });
+}
+function setConn(ok){
+  document.getElementById('dot').className='dot'+(ok?' on':'');
+  document.getElementById('connTxt').textContent=ok?'接続中':'未接続';
+}
+
+/* ---- 日付ユーティリティ ---- */
+function ymd(dt){return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+function todayStr(){return ymd(new Date());}
+
+/* ---- 月移動 ---- */
+function moveMonth(n){ view.setMonth(view.getMonth()+n); render(); }
+function goToday(){ view=new Date(); view.setDate(1); render(); }
+
+/* ---- 描画 ---- */
+function render(){
+  document.getElementById('monthLabel').textContent=view.getFullYear()+'年 '+(view.getMonth()+1)+'月';
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  const first=new Date(view.getFullYear(),view.getMonth(),1);
+  const startDow=first.getDay();
+  const daysInMonth=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+  const today=todayStr();
+
+  for(let i=0;i<startDow;i++){
+    const b=document.createElement('div'); b.className='cell blank'; grid.appendChild(b);
+  }
+  for(let day=1;day<=daysInMonth;day++){
+    const dt=new Date(view.getFullYear(),view.getMonth(),day);
+    const ds=ymd(dt); const dow=dt.getDay();
+    const cell=document.createElement('div'); cell.className='cell'; cell.dataset.ds=ds;
+    const past=ds<today;
+
+    // 状態判定：特別営業 > 休業 > 定休(曜日) > 営業
+    let state='biz', tag='';
+    if(cur.open.has(ds)){ state='open'; tag='特別営業'; }
+    else if(cur.closed.has(ds)){ state='closed'; tag='休業'; }
+    else if(CLOSED_WEEKDAYS.includes(dow)){ state='teikyu'; tag='定休'; }
+
+    cell.classList.add(state);
+    if(ds===today)cell.classList.add('today');
+    if(past){ cell.classList.add('past'); }
+    else{ cell.classList.add('tap'); cell.onclick=()=>toggle(ds,dow); }
+
+    const dCls = dow===0?' sun':dow===6?' sat':'';
+    cell.innerHTML=`<span class="d${dCls}">${day}</span>`+(tag?`<span class="tag">${tag}</span>`:'');
+    grid.appendChild(cell);
+  }
+  updateSaveBar();
+}
+
+/* ---- タップで状態切替 ---- */
+function toggle(ds,dow){
+  const isTeikyu=CLOSED_WEEKDAYS.includes(dow);
+  if(isTeikyu){
+    // 定休日：特別営業 ⇄ 定休
+    if(cur.open.has(ds))cur.open.delete(ds);
+    else cur.open.add(ds);
+  }else{
+    // 通常日：営業 ⇄ 休業
+    if(cur.closed.has(ds))cur.closed.delete(ds);
+    else cur.closed.add(ds);
+  }
+  render();
+}
+
+/* ---- 変更あり？ ---- */
+function eqSet(a,b){ if(a.size!==b.size)return false; for(const x of a)if(!b.has(x))return false; return true; }
+function isDirty(){ return !eqSet(cur.closed,saved.closed)||!eqSet(cur.open,saved.open); }
+
+function updateSaveBar(){
+  const st=document.getElementById('saveStatus');
+  const btn=document.getElementById('saveBtn');
+  if(isDirty()){
+    // 差分件数
+    let add=0,del=0;
+    cur.closed.forEach(d=>{if(!saved.closed.has(d))add++;});
+    saved.closed.forEach(d=>{if(!cur.closed.has(d))del++;});
+    cur.open.forEach(d=>{if(!saved.open.has(d))add++;});
+    saved.open.forEach(d=>{if(!cur.open.has(d))del++;});
+    st.innerHTML=`<b>未保存の変更があります</b>（追加 ${add} / 取消 ${del}）`;
+    btn.disabled=false; btn.classList.add('dirty');
+  }else{
+    const c=saved.closed.size, o=saved.open.size;
+    st.textContent=`保存済み — 臨時休業 ${c}日 / 特別営業 ${o}日`;
+    btn.disabled=true; btn.classList.remove('dirty');
+  }
+}
+
+/* ---- 保存 ---- */
+async function save(){
+  if(!db){ toast('Firebase未接続','err'); return; }
+  if(!isDirty()){ return; }
+  const btn=document.getElementById('saveBtn'); btn.disabled=true;
+  const payload={
+    closedDates:[...cur.closed].sort(),
+    openDates:[...cur.open].sort(),
+    updatedAt:Date.now()
+  };
+  try{
+    await db.ref(DB_PATH).set(payload);
+    // savedはFirebaseの購読で更新されるが、即時反映もしておく
+    saved.closed=new Set(cur.closed); saved.open=new Set(cur.open);
+    updateSaveBar();
+    toast('保存しました。予約サイトに反映されます','ok');
+  }catch(e){
+    console.error(e); toast('保存に失敗しました：'+e.message,'err');
+    btn.disabled=false; btn.classList.add('dirty');
+  }
+}
+
+/* ---- トースト ---- */
+function toast(msg,kind){
+  const t=document.createElement('div'); t.className='toast'+(kind?' '+kind:''); t.textContent=msg;
+  document.getElementById('toast').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .4s';setTimeout(()=>t.remove(),400);},2800);
+}
+
+/* ---- 離脱ガード ---- */
+window.addEventListener('beforeunload',e=>{ if(isDirty()){ e.preventDefault(); e.returnValue=''; } });
+</script>
+</body>
+</html>
