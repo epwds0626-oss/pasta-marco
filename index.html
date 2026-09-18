@@ -264,6 +264,46 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 .cal-legend{display:flex;gap:20px;padding:8px 16px 12px;border-top:1px solid rgba(17,16,9,.06)}
 .cal-leg{display:flex;align-items:center;gap:6px;font-family:var(--cg);font-size:10px;letter-spacing:.2em;color:rgba(17,16,9,.35)}
 .cal-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ===== 予約カレンダー（向こう3ヶ月・インライン） ===== */
+.cal3-wrap{width:100%}
+.cal3-selected{background:var(--w);border:1px solid var(--cream);padding:13px 16px;font-family:var(--ns);font-weight:200;font-size:15px;letter-spacing:.06em;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.cal3-selected::before{content:'予約日';font-family:var(--cg);font-size:9px;letter-spacing:.25em;color:rgba(17,16,9,.35);flex-shrink:0}
+.cal3-selected .placeholder{color:rgba(17,16,9,.3)}
+.cal3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.m3{background:var(--w);border:1px solid var(--cream);padding:14px 12px 12px}
+.m3-h{font-family:var(--cg);font-size:12px;font-weight:300;letter-spacing:.28em;color:var(--ink);text-align:center;padding-bottom:12px;border-bottom:1px solid rgba(17,16,9,.07);margin-bottom:8px}
+.m3-wd{display:grid;grid-template-columns:repeat(7,1fr)}
+.m3-wd span{font-family:var(--cg);font-size:8px;letter-spacing:.15em;color:rgba(17,16,9,.3);text-align:center;padding:3px 0}
+.m3-wd span:first-child{color:rgba(160,50,50,.5)}
+.m3-wd span:nth-child(5){color:rgba(17,16,9,.2)}
+.m3-wd span:last-child{color:rgba(50,70,160,.4)}
+.m3-days{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.m3-day{font-family:var(--cg);font-size:12px;font-weight:300;text-align:center;padding:7px 0 5px;color:var(--ink);position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-height:34px}
+.m3-day.sun{color:rgba(160,50,50,.75)}
+.m3-day.sat{color:rgba(50,70,160,.65)}
+.m3-day .lb{display:block;font-size:7px;letter-spacing:.06em;margin-top:1px;line-height:1}
+.m3-day.open-day{cursor:pointer;transition:background .15s,color .15s}
+.m3-day.open-day:hover{background:rgba(92,107,46,.12);color:var(--olive)}
+.m3-day.today::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--ollt)}
+.m3-day.selected{background:var(--ink)!important;color:var(--w)!important}
+.m3-day.teikyu{color:rgba(17,16,9,.2)!important;background:rgba(17,16,9,.03)}
+.m3-day.teikyu .lb{color:rgba(17,16,9,.28)}
+.m3-day.closed{color:rgba(160,50,50,.35)!important;background:rgba(160,50,50,.05)}
+.m3-day.closed .lb{color:rgba(160,50,50,.45)}
+.m3-day.special{color:var(--olive)!important;background:rgba(92,107,46,.07);cursor:pointer;font-weight:400}
+.m3-day.special .lb{color:var(--olive)}
+.m3-day.past{color:rgba(17,16,9,.13)!important}
+.m3-day.empty{visibility:hidden}
+.cal3-legend{display:flex;flex-wrap:wrap;gap:16px;padding:14px 2px 0}
+/* 表示専用（Newsの営業カレンダー）：クリック不可 */
+.cal3-view .m3-day{cursor:default!important}
+.cal3-view .m3-day.open-day:hover{background:none;color:var(--ink)}
+.cal3-view .m3-day.special{cursor:default!important}
+@media(max-width:820px){
+  .cal3{grid-template-columns:1fr;gap:10px}
+  .m3-day{font-size:14px;padding:9px 0 6px;min-height:40px}
+  .m3-wd span{font-size:9px}
+}
 /* ===== END CUSTOM CALENDAR ===== */
 
 /* LIGHTBOX */
@@ -479,9 +519,11 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
         <p style="font-size:15px;line-height:2.4;color:rgba(17,16,9,.68);margin-bottom:32px">最新の営業カレンダーや新メニュー情報をお届けします。</p>
 
         <p class="photo-gallery-label" style="margin-top:0">営業カレンダー</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px">
-          <img src="https://epwds0626-oss.github.io/pasta-marco/2026.9.png" alt="9月営業カレンダー（長月）" style="width:100%;display:block;border:1px solid rgba(17,16,9,.08)">
-          <img src="https://epwds0626-oss.github.io/pasta-marco/2026.10.png" alt="10月営業カレンダー（神無月）" style="width:100%;display:block;border:1px solid rgba(17,16,9,.08)">
+        <div class="cal3 cal3-view" id="calNews" style="margin-bottom:14px"></div>
+        <div class="cal3-legend" style="margin-bottom:32px">
+          <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(17,16,9,.18)"></span>定休日（木）</span>
+          <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(160,50,50,.5)"></span>休業日</span>
+          <span class="cal-leg"><span class="cal-leg-dot" style="background:var(--olive)"></span>特別営業</span>
         </div>
 
         <p class="photo-gallery-label" style="margin-top:36px">New Menu</p>
@@ -586,26 +628,13 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 
           <div class="rf full" id="rf-date">
             <label class="rl">予約日<em>必須</em></label>
-            <div class="cal-wrap" id="calWrap">
-              <div class="cal-display" id="calDisplay" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
-                <span id="calDisplayText" class="placeholder">日付を選択してください</span>
-                <span class="cal-icon">▾</span>
-              </div>
-              <div class="cal-picker" id="calPicker" role="dialog" aria-label="日付選択">
-                <div class="cal-header">
-                  <button class="cal-nav" id="calPrev" aria-label="前月">‹</button>
-                  <span class="cal-month-year" id="calMonthYear"></span>
-                  <button class="cal-nav" id="calNext" aria-label="翌月">›</button>
-                </div>
-                <div class="cal-weekdays">
-                  <div class="cal-wd">日</div><div class="cal-wd">月</div><div class="cal-wd">火</div>
-                  <div class="cal-wd">水</div><div class="cal-wd">木</div><div class="cal-wd">金</div><div class="cal-wd">土</div>
-                </div>
-                <div class="cal-days" id="calDays"></div>
-                <div class="cal-legend">
-                  <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(17,16,9,.18)"></span>定休日（木）</span>
-                  <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(160,50,50,.3)"></span>休業日</span>
-                </div>
+            <div class="cal3-wrap" id="calWrap">
+              <div class="cal3-selected" id="calSelected"><span class="placeholder">下のカレンダーから予約日をお選びください</span></div>
+              <div class="cal3" id="cal3"></div>
+              <div class="cal3-legend">
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:var(--olive)"></span>予約できる日</span>
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(17,16,9,.18)"></span>定休日（木）</span>
+                <span class="cal-leg"><span class="cal-leg-dot" style="background:rgba(160,50,50,.5)"></span>休業日</span>
               </div>
             </div>
             <input type="hidden" id="rDate">
@@ -694,132 +723,178 @@ const CAL_CONFIG = {
 // =====================================================
 (function(){
   const MONTHS_JP = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  let calYear, calMonth, selectedDate = null;
+  const WD = ['日','月','火','水','木','金','土'];
+  const MONTHS_SHOWN = 3; // HPに表示する月数（向こう3ヶ月）
+  let selectedDate = null;
 
-  const display   = document.getElementById('calDisplay');
-  const displayTxt= document.getElementById('calDisplayText');
-  const picker    = document.getElementById('calPicker');
-  const daysEl    = document.getElementById('calDays');
-  const myLabel   = document.getElementById('calMonthYear');
-  const prevBtn   = document.getElementById('calPrev');
-  const nextBtn   = document.getElementById('calNext');
-  const hiddenInp = document.getElementById('rDate');
+  // 休業日データ：初期値は下のCAL_CONFIG。管理画面（Firebase）から読めたら上書きする。
+  let closedDates = CAL_CONFIG.closedDates.slice();
+  let openDates   = CAL_CONFIG.openDates.slice();
+  const closedWeekdays = CAL_CONFIG.closedWeekdays;
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  calYear  = today.getFullYear();
-  calMonth = today.getMonth();
+  const cal3     = document.getElementById('cal3');
+  const selEl    = document.getElementById('calSelected');
+  const hiddenInp= document.getElementById('rDate');
 
-  function toDateStr(y,m,d){
-    return y+'-'+(String(m+1).padStart(2,'0'))+'-'+(String(d).padStart(2,'0'));
-  }
-  function isForceOpen(dateStr){ return CAL_CONFIG.openDates.includes(dateStr); }
-  function isClosedWeekday(date, dateStr){ return CAL_CONFIG.closedWeekdays.includes(date.getDay()) && !isForceOpen(dateStr); }
-  function isClosedSpecial(dateStr){ return CAL_CONFIG.closedDates.includes(dateStr); }
-  function isPast(date){ return date < today; }
-  function isTooFar(date){
-    const limit = new Date(today);
-    limit.setDate(limit.getDate() + CAL_CONFIG.maxAdvanceDays);
-    return date > limit;
-  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const limit = new Date(today); limit.setDate(limit.getDate() + CAL_CONFIG.maxAdvanceDays);
+  const todayStr = toDateStr(today.getFullYear(), today.getMonth(), today.getDate());
 
-  function renderCalendar(){
-    myLabel.textContent = calYear + '年 ' + MONTHS_JP[calMonth];
-    daysEl.innerHTML = '';
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-    for(let i=0;i<firstDay;i++){
-      const empty = document.createElement('div');
-      empty.className='cal-day empty';
-      daysEl.appendChild(empty);
+  function toDateStr(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  function isForceOpen(ds){ return openDates.includes(ds); }
+  function isClosedWeekday(date, ds){ return closedWeekdays.includes(date.getDay()) && !isForceOpen(ds); }
+  function isClosedSpecial(ds){ return closedDates.includes(ds); }
+
+  function render(){
+    cal3.innerHTML = '';
+    const base = new Date(today.getFullYear(), today.getMonth(), 1);
+    for(let mi=0; mi<MONTHS_SHOWN; mi++){
+      const y = base.getFullYear(), m = base.getMonth()+mi;
+      const yy = y + Math.floor(m/12), mm = ((m%12)+12)%12;
+      cal3.appendChild(buildMonth(yy, mm));
     }
-    for(let d=1;d<=daysInMonth;d++){
-      const date    = new Date(calYear, calMonth, d);
-      const dateStr = toDateStr(calYear, calMonth, d);
-      const dow     = date.getDay();
+  }
+
+  function buildMonth(y, m){
+    const wrap = document.createElement('div'); wrap.className='m3';
+    const h = document.createElement('div'); h.className='m3-h';
+    h.textContent = y+'年 '+MONTHS_JP[m];
+    wrap.appendChild(h);
+    const wd = document.createElement('div'); wd.className='m3-wd';
+    WD.forEach(w=>{ const s=document.createElement('span'); s.textContent=w; wd.appendChild(s); });
+    wrap.appendChild(wd);
+    const days = document.createElement('div'); days.className='m3-days';
+    const firstDow = new Date(y, m, 1).getDay();
+    const dim = new Date(y, m+1, 0).getDate();
+    for(let i=0;i<firstDow;i++){ const e=document.createElement('div'); e.className='m3-day empty'; days.appendChild(e); }
+    for(let d=1;d<=dim;d++){
+      const date = new Date(y, m, d);
+      const ds = toDateStr(y, m, d);
+      const dow = date.getDay();
       const cell = document.createElement('div');
-      cell.className = 'cal-day';
-      cell.textContent = d;
+      cell.className = 'm3-day';
       if(dow===0) cell.classList.add('sun');
       if(dow===6) cell.classList.add('sat');
-      if(dateStr === toDateStr(today.getFullYear(), today.getMonth(), today.getDate())){
-        cell.classList.add('today');
-      }
-      if(selectedDate === dateStr) cell.classList.add('selected');
-      if(isPast(date)){
-        cell.classList.add('disabled-past');
-      } else if(isTooFar(date)){
-        cell.classList.add('disabled-past');
-      } else if(isClosedSpecial(dateStr)){
-        cell.classList.add('closed-special');
-        const lbl = document.createElement('span');
-        lbl.style.cssText='display:block;font-size:8px;letter-spacing:.1em;color:rgba(160,50,50,.35);margin-top:1px';
-        lbl.textContent='休業';
-        cell.appendChild(lbl);
-      } else if(isClosedWeekday(date, dateStr)){
-        cell.classList.add('closed-weekly');
-        const lbl = document.createElement('span');
-        lbl.style.cssText='display:block;font-size:8px;letter-spacing:.1em;color:rgba(17,16,9,.2);margin-top:1px';
-        lbl.textContent='定休';
-        cell.appendChild(lbl);
+      if(ds===todayStr) cell.classList.add('today');
+      if(selectedDate===ds) cell.classList.add('selected');
+      const num = document.createElement('span'); num.textContent = d; cell.appendChild(num);
+
+      if(date < today || date > limit){
+        cell.classList.add('past');
+      } else if(isClosedSpecial(ds)){
+        cell.classList.add('closed'); addLabel(cell,'休業');
+      } else if(isForceOpen(ds)){
+        cell.classList.add('special','open-day'); addLabel(cell,'営業');
+        cell.addEventListener('click', ()=>selectDate(ds));
+      } else if(isClosedWeekday(date, ds)){
+        cell.classList.add('teikyu'); addLabel(cell,'定休');
       } else {
-        cell.addEventListener('click', ()=>selectDate(dateStr, d));
+        cell.classList.add('open-day');
+        cell.addEventListener('click', ()=>selectDate(ds));
       }
-      daysEl.appendChild(cell);
+      days.appendChild(cell);
     }
-    const prevDate = new Date(calYear, calMonth, 0);
-    prevBtn.disabled = prevDate < today;
-    prevBtn.style.opacity = prevBtn.disabled ? '.2' : '';
-    prevBtn.style.pointerEvents = prevBtn.disabled ? 'none' : '';
+    wrap.appendChild(days);
+    return wrap;
   }
+  function addLabel(cell, txt){ const s=document.createElement('span'); s.className='lb'; s.textContent=txt; cell.appendChild(s); }
 
-  function selectDate(dateStr, d){
-    selectedDate = dateStr;
-    hiddenInp.value = dateStr;
-    const [y,m,dd] = dateStr.split('-').map(Number);
-    const weekDays = ['日','月','火','水','木','金','土'];
+  function selectDate(ds){
+    selectedDate = ds;
+    hiddenInp.value = ds;
+    const [y,m,dd] = ds.split('-').map(Number);
     const dow = new Date(y,m-1,dd).getDay();
-    displayTxt.textContent = y+'年'+m+'月'+dd+'日（'+weekDays[dow]+'）';
-    displayTxt.classList.remove('placeholder');
-    closePicker();
-    renderCalendar();
-    loadVac(dateStr);
+    selEl.innerHTML = y+'年'+m+'月'+dd+'日（'+WD[dow]+'）';
+    render();
+    if(typeof loadVac==='function') loadVac(ds);
+    // 選択した月あたりへスクロール（時間枠が見えるように少しだけ下げる）
+    document.getElementById('rf-date').scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
-  function openPicker(){
-    picker.classList.add('open');
-    display.classList.add('open');
-    display.setAttribute('aria-expanded','true');
-  }
-  function closePicker(){
-    picker.classList.remove('open');
-    display.classList.remove('open');
-    display.setAttribute('aria-expanded','false');
-  }
+  // 予約送信後などに外から呼ぶリセット
+  window.marcoCalReset = function(){
+    selectedDate = null;
+    hiddenInp.value = '';
+    selEl.innerHTML = '<span class="placeholder">下のカレンダーから予約日をお選びください</span>';
+    render();
+  };
 
-  display.addEventListener('click', e=>{
-    e.stopPropagation();
-    picker.classList.contains('open') ? closePicker() : openPicker();
-  });
-  display.addEventListener('keydown', e=>{
-    if(e.key==='Enter'||e.key===' '){e.preventDefault();picker.classList.contains('open')?closePicker():openPicker();}
-    if(e.key==='Escape') closePicker();
-  });
-  document.addEventListener('click', e=>{
-    if(!document.getElementById('calWrap').contains(e.target)) closePicker();
-  });
-  prevBtn.addEventListener('click', e=>{
-    e.stopPropagation();
-    calMonth--;if(calMonth<0){calMonth=11;calYear--;}
-    renderCalendar();
-  });
-  nextBtn.addEventListener('click', e=>{
-    e.stopPropagation();
-    calMonth++;if(calMonth>11){calMonth=0;calYear++;}
-    renderCalendar();
-  });
+  // まず内蔵データで即描画（Firebaseが遅くても/落ちても表示は出る）
+  render();
 
-  renderCalendar();
+  // 管理画面（Firebase）の休業日を読み込んで上書き
+  const FB_URL = 'https://fishhack-74de3-default-rtdb.asia-southeast1.firebasedatabase.app/marco/calendar.json';
+  fetch(FB_URL, {cache:'no-store'})
+    .then(r=> r.ok ? r.json() : null)
+    .then(data=>{
+      if(data && (Array.isArray(data.closedDates) || Array.isArray(data.openDates))){
+        if(Array.isArray(data.closedDates)) closedDates = data.closedDates;
+        if(Array.isArray(data.openDates))   openDates   = data.openDates;
+        render();
+      }
+    })
+    .catch(()=>{ /* 取得失敗時は内蔵データのまま。予約は止めない。 */ });
+})();
+
+// =====================================================
+// News「営業カレンダー」— 向こう3ヶ月・表示専用（管理画面/Firebaseの休業日を反映）
+// =====================================================
+(function(){
+  const el = document.getElementById('calNews');
+  if(!el) return;
+  const MONTHS_JP = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const WD = ['日','月','火','水','木','金','土'];
+  const N = 3;
+  let closedDates = CAL_CONFIG.closedDates.slice();
+  let openDates   = CAL_CONFIG.openDates.slice();
+  const cw = CAL_CONFIG.closedWeekdays;
+  const today = new Date(); today.setHours(0,0,0,0);
+  function ds(y,m,d){ return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'); }
+  const todayStr = ds(today.getFullYear(), today.getMonth(), today.getDate());
+
+  function render(){
+    el.innerHTML = '';
+    const base = new Date(today.getFullYear(), today.getMonth(), 1);
+    for(let i=0;i<N;i++){
+      const m = base.getMonth()+i;
+      el.appendChild(month(base.getFullYear()+Math.floor(m/12), ((m%12)+12)%12));
+    }
+  }
+  function month(y, m){
+    const wrap=document.createElement('div'); wrap.className='m3';
+    const h=document.createElement('div'); h.className='m3-h'; h.textContent=y+'年 '+MONTHS_JP[m]; wrap.appendChild(h);
+    const wd=document.createElement('div'); wd.className='m3-wd';
+    WD.forEach(w=>{const s=document.createElement('span');s.textContent=w;wd.appendChild(s);}); wrap.appendChild(wd);
+    const days=document.createElement('div'); days.className='m3-days';
+    const firstDow=new Date(y,m,1).getDay(), dim=new Date(y,m+1,0).getDate();
+    for(let i=0;i<firstDow;i++){const e=document.createElement('div');e.className='m3-day empty';days.appendChild(e);}
+    for(let d=1;d<=dim;d++){
+      const date=new Date(y,m,d), s=ds(y,m,d), dow=date.getDay();
+      const cell=document.createElement('div'); cell.className='m3-day';
+      if(dow===0)cell.classList.add('sun'); if(dow===6)cell.classList.add('sat');
+      if(s===todayStr)cell.classList.add('today');
+      const num=document.createElement('span'); num.textContent=d; cell.appendChild(num);
+      if(date<today){ cell.classList.add('past'); }
+      else if(closedDates.includes(s)){ cell.classList.add('closed'); lab(cell,'休業'); }
+      else if(openDates.includes(s)){ cell.classList.add('special'); lab(cell,'営業'); }
+      else if(cw.includes(dow)){ cell.classList.add('teikyu'); lab(cell,'定休'); }
+      days.appendChild(cell);
+    }
+    wrap.appendChild(days); return wrap;
+  }
+  function lab(cell,t){const s=document.createElement('span');s.className='lb';s.textContent=t;cell.appendChild(s);}
+
+  render();
+  fetch('https://fishhack-74de3-default-rtdb.asia-southeast1.firebasedatabase.app/marco/calendar.json', {cache:'no-store'})
+    .then(r=> r.ok ? r.json() : null)
+    .then(data=>{
+      if(data && (Array.isArray(data.closedDates) || Array.isArray(data.openDates))){
+        if(Array.isArray(data.closedDates)) closedDates = data.closedDates;
+        if(Array.isArray(data.openDates))   openDates   = data.openDates;
+        render();
+      }
+    })
+    .catch(()=>{});
 })();
 
 // =====================================================
@@ -1096,8 +1171,7 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
     document.getElementById('rChildren').value='0名';
     document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
     document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load'});
-    document.getElementById('calDisplayText').textContent='日付を選択してください';
-    document.getElementById('calDisplayText').classList.add('placeholder');
+    if(window.marcoCalReset) window.marcoCalReset();
   }else{
     msg.textContent = reserveNgMessage(res && res.code);
     msg.className='rmsg ng';
