@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>マルコ 休業日管理</title>
+<title>マルコ 休業日・満席管理</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
@@ -27,6 +27,7 @@
   --teikyu:#8a8075;     --teikyu-bg:#ece7dc;   /* 定休（木・静かな灰） */
   --open:#4f6b3a;       --open-bg:#e5ecd9;     /* 特別営業（オリーブ） */
   --biz:#fffefb;                                /* 営業（紙のまま） */
+  --full:#8a5a12;       --full-bg:#f6ead2;     /* 満席枠あり（琥珀） */
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{font-size:16px}
@@ -95,6 +96,7 @@ header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40
 .cell.open{background:var(--open-bg)}
 .cell.open .d{color:var(--open);font-weight:700}
 .cell.open .tag{background:var(--open);color:#fff}
+.cell .ftag{font-size:10px;line-height:1.2;padding:1px 5px;border-radius:2px;background:var(--full);color:#fff;letter-spacing:.02em}
 .cell .d.sun{color:var(--closed)}
 .cell .d.sat{color:#3a5a86}
 
@@ -106,6 +108,36 @@ header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40
 .legend i.c-teikyu{background:var(--teikyu-bg)}
 .legend i.c-open{background:var(--open-bg);border-color:var(--open)}
 .legend i.c-biz{background:var(--biz)}
+.legend i.c-full{background:var(--full);border-color:var(--full)}
+
+/* ===== 日付シート（タップで開く） ===== */
+#sheetMask{position:fixed;inset:0;z-index:90;background:rgba(28,24,19,.42);display:none}
+#sheetMask.on{display:block}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:91;background:var(--card);border-radius:10px 10px 0 0;
+  box-shadow:0 -8px 30px rgba(28,24,19,.18);transform:translateY(105%);transition:transform .22s ease}
+#sheet.on{transform:none}
+#sheet .in{max-width:640px;margin:0 auto;padding:18px 18px 26px}
+#sheet .sh-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+#sheet .sh-date{font-family:"Shippori Mincho",serif;font-weight:700;font-size:21px;letter-spacing:.04em}
+#sheet .sh-state{font-size:12px;color:var(--ink-soft)}
+#sheet .sh-close{margin-left:auto;border:1px solid var(--line-strong);background:var(--card);border-radius:2px;padding:6px 14px;font-size:13px;color:var(--ink-soft)}
+.sh-sec{font-size:11px;color:var(--ink-soft);letter-spacing:.18em;margin:14px 2px 6px}
+.row{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-top:none;background:var(--card)}
+.row:first-of-type{border-top:1px solid var(--line)}
+.rows .row:first-child{border-top:1px solid var(--line)}
+.row .lab{flex:1;font-size:15px}
+.row .lab small{display:block;font-size:11px;color:var(--ink-soft)}
+.row.on-full{background:var(--full-bg)}
+.row.on-closed{background:var(--closed-bg)}
+.row.on-open{background:var(--open-bg)}
+/* スイッチ */
+.sw{position:relative;width:52px;height:30px;flex-shrink:0;border:none;border-radius:15px;background:#cfc6b5;transition:background .15s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.sw.on::after{transform:translateX(22px)}
+.sw.on.k-full{background:var(--full)}
+.sw.on.k-closed{background:var(--closed)}
+.sw.on.k-open{background:var(--open)}
+.sh-note{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;line-height:1.8}
 .hint{margin:14px 2px 0;font-size:12px;color:var(--ink-soft);line-height:1.8}
 
 /* ===== 保存バー ===== */
@@ -175,9 +207,11 @@ header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40
     <span><i class="c-closed"></i>休業（臨時）</span>
     <span><i class="c-teikyu"></i>定休（木）</span>
     <span><i class="c-open"></i>特別営業</span>
+    <span><i class="c-full"></i>満席枠あり（数字＝枠数）</span>
   </div>
   <p class="hint">
-    日付をタップして切り替えます。営業日 → タップで「休業」。木曜（定休）→ タップで「特別営業」。もう一度タップで元に戻ります。<br>
+    日付をタップすると設定画面が開きます。そこで「休業／特別営業」と、時間枠ごとの「満席にする」を切り替えます。<br>
+    大人数1組で枠を貸し切りたいときは、その枠を「満席」にするとWeb予約が入らなくなります（電話予約はそのまま受けられます）。<br>
     変更したら下の <b>保存する</b> を押してください。押すまで予約サイトには反映されません。
   </p>
 </div>
@@ -187,6 +221,19 @@ header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40
   <div class="in">
     <div class="status" id="saveStatus">読み込み中…</div>
     <button class="save" id="saveBtn" onclick="save()" disabled>保存する</button>
+  </div>
+</div>
+
+<!-- ========== 日付シート ========== -->
+<div id="sheetMask" onclick="closeSheet()"></div>
+<div id="sheet" role="dialog" aria-modal="true">
+  <div class="in">
+    <div class="sh-h">
+      <span class="sh-date" id="shDate">—</span>
+      <span class="sh-state" id="shState"></span>
+      <button class="sh-close" onclick="closeSheet()">閉じる</button>
+    </div>
+    <div id="shBody"></div>
   </div>
 </div>
 
@@ -215,7 +262,14 @@ const firebaseConfig = {
   messagingSenderId:"1083972133446",
   appId:"1:1083972133446:web:576fd1c22ec4b6868ca047"
 };
-const DB_PATH = "marco/calendar"; // { closedDates:[...], openDates:[...], updatedAt: ... }
+const DB_PATH = "marco/calendar"; // { closedDates:[...], openDates:[...], fullSlots:{ "YYYY-MM-DD":["13:00〜14:30",...] }, updatedAt: ... }
+
+// ▼ 予約の時間枠。key は予約サイト（index.html の SLOT_KEYS）・GAS と一字一句同じにすること。
+const SLOTS = [
+  {key:"11:00〜12:30", label:"11:00 枠", sub:"11:00 ご来店 — 12:30 ご利用最終"},
+  {key:"13:00〜14:30", label:"13:00 枠", sub:"13:00 ご来店 — 14:30 ご利用最終"},
+  {key:"15:00〜16:00", label:"15:00 枠", sub:"15:00 ご来店 — 16:00 ご利用最終"}
+];
 
 /* =======================================================================
    以下、通常は触らない
@@ -226,8 +280,12 @@ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); }
 catch(e){ console.error(e); }
 
 // 状態（Firebaseから読んだ確定値 = saved、編集中 = cur）
-let saved={closed:new Set(),open:new Set()};
-let cur  ={closed:new Set(),open:new Set()};
+// full は "YYYY-MM-DD|枠キー" の集合（比較しやすいよう平たくして持つ）
+let saved={closed:new Set(),open:new Set(),full:new Set()};
+let cur  ={closed:new Set(),open:new Set(),full:new Set()};
+function fullFromObj(o){ const s=new Set(); if(o&&typeof o==='object'){ for(const d in o){ (Array.isArray(o[d])?o[d]:[]).forEach(k=>s.add(d+'|'+k)); } } return s; }
+function fullToObj(set){ const o={}; [...set].sort().forEach(x=>{ const i=x.indexOf('|'); const d=x.slice(0,i), k=x.slice(i+1); (o[d]=o[d]||[]).push(k); }); return o; }
+function fullCount(ds,set){ let n=0; SLOTS.forEach(s=>{ if((set||cur.full).has(ds+'|'+s.key))n++; }); return n; }
 let view=new Date(); view.setDate(1);
 
 /* ---- ロック ---- */
@@ -251,17 +309,24 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 /* ---- 起動 ---- */
 let started=false;
+let loadedOnce=false;
 function start(){
   if(started)return; started=true;
   if(!db){ setConn(false); toast('Firebaseに接続できません','err'); return; }
   db.ref(DB_PATH).on('value',snap=>{
     setConn(true);
     const d=snap.val()||{};
+    // 「受信前の時点で」編集中だったかを見る（受信後に比べると初回は必ず差分ありと誤判定し、
+    //  画面が空のまま → 保存で休業日が全消えする不具合になっていた）
+    const wasDirty = loadedOnce && isDirty();
+    loadedOnce = true;
     saved.closed=new Set(d.closedDates||[]);
     saved.open =new Set(d.openDates||[]);
+    saved.full =fullFromObj(d.fullSlots);
     // 編集中でなければ、読み込んだ値を編集面にも反映
-    if(!isDirty()){ cur.closed=new Set(saved.closed); cur.open=new Set(saved.open); }
+    if(!wasDirty){ cur.closed=new Set(saved.closed); cur.open=new Set(saved.open); cur.full=new Set(saved.full); }
     render();
+    if(sheetDs) renderSheet();
   },err=>{ setConn(false); toast('読み込みに失敗しました','err'); console.error(err); });
 }
 function setConn(ok){
@@ -305,33 +370,90 @@ function render(){
     cell.classList.add(state);
     if(ds===today)cell.classList.add('today');
     if(past){ cell.classList.add('past'); }
-    else{ cell.classList.add('tap'); cell.onclick=()=>toggle(ds,dow); }
+    else{ cell.classList.add('tap'); cell.onclick=()=>openSheet(ds); }
 
     const dCls = dow===0?' sun':dow===6?' sat':'';
-    cell.innerHTML=`<span class="d${dCls}">${day}</span>`+(tag?`<span class="tag">${tag}</span>`:'');
+    const nFull = (state==='biz'||state==='open') ? fullCount(ds) : 0;
+    cell.innerHTML=`<span class="d${dCls}">${day}</span>`+(tag?`<span class="tag">${tag}</span>`:'')
+      +(nFull?`<span class="ftag">満${nFull===SLOTS.length?'全':nFull}</span>`:'');
     grid.appendChild(cell);
   }
   updateSaveBar();
 }
 
-/* ---- タップで状態切替 ---- */
-function toggle(ds,dow){
-  const isTeikyu=CLOSED_WEEKDAYS.includes(dow);
-  if(isTeikyu){
-    // 定休日：特別営業 ⇄ 定休
-    if(cur.open.has(ds))cur.open.delete(ds);
-    else cur.open.add(ds);
-  }else{
-    // 通常日：営業 ⇄ 休業
-    if(cur.closed.has(ds))cur.closed.delete(ds);
-    else cur.closed.add(ds);
-  }
-  render();
+/* ---- 日付シート ---- */
+const WD=['日','月','火','水','木','金','土'];
+let sheetDs=null;
+function dowOf(ds){ const [y,m,d]=ds.split('-').map(Number); return new Date(y,m-1,d).getDay(); }
+function isOpenDay(ds){
+  const dow=dowOf(ds);
+  if(cur.open.has(ds)) return true;
+  if(cur.closed.has(ds)) return false;
+  return !CLOSED_WEEKDAYS.includes(dow);
 }
+function openSheet(ds){
+  sheetDs=ds; renderSheet();
+  document.getElementById('sheetMask').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+function closeSheet(){
+  sheetDs=null;
+  document.getElementById('sheetMask').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+function renderSheet(){
+  if(!sheetDs)return;
+  const ds=sheetDs, dow=dowOf(ds), [y,m,d]=ds.split('-').map(Number);
+  const isTeikyu=CLOSED_WEEKDAYS.includes(dow);
+  document.getElementById('shDate').textContent=`${m}月${d}日（${WD[dow]}）`;
+  const open=isOpenDay(ds);
+  document.getElementById('shState').textContent= open ? (isTeikyu?'特別営業':'営業') : (isTeikyu?'定休':'臨時休業');
+
+  let h='<div class="sh-sec">この日</div><div class="rows">';
+  if(isTeikyu){
+    const on=cur.open.has(ds);
+    h+=`<div class="row ${on?'on-open':''}"><div class="lab">特別営業にする<small>木曜定休日を営業日にします</small></div>
+        <button class="sw k-open ${on?'on':''}" onclick="toggleDay()" aria-pressed="${on}"></button></div>`;
+  }else{
+    const on=cur.closed.has(ds);
+    h+=`<div class="row ${on?'on-closed':''}"><div class="lab">臨時休業にする<small>Web予約を受け付けません</small></div>
+        <button class="sw k-closed ${on?'on':''}" onclick="toggleDay()" aria-pressed="${on}"></button></div>`;
+  }
+  h+='</div>';
+
+  if(open){
+    h+='<div class="sh-sec">時間枠（Web予約を止める）</div><div class="rows">';
+    SLOTS.forEach((s,i)=>{
+      const on=cur.full.has(ds+'|'+s.key);
+      h+=`<div class="row ${on?'on-full':''}"><div class="lab">${s.label}　${on?'<b style="color:var(--full)">満席表示中</b>':''}<small>${s.sub}</small></div>
+          <button class="sw k-full ${on?'on':''}" onclick="toggleSlot(${i})" aria-pressed="${on}"></button></div>`;
+    });
+    h+='</div><p class="sh-note">満席にした枠は予約サイトで「満席」と表示され、選べなくなります。すでに入っている予約は消えません。</p>';
+  }else{
+    h+='<p class="sh-note">休業日のため時間枠の設定はありません。</p>';
+  }
+  document.getElementById('shBody').innerHTML=h;
+}
+function toggleDay(){
+  const ds=sheetDs; if(!ds)return;
+  if(CLOSED_WEEKDAYS.includes(dowOf(ds))){
+    if(cur.open.has(ds))cur.open.delete(ds); else cur.open.add(ds);
+  }else{
+    if(cur.closed.has(ds))cur.closed.delete(ds); else cur.closed.add(ds);
+  }
+  render(); renderSheet();
+}
+function toggleSlot(i){
+  const ds=sheetDs; if(!ds)return;
+  const k=ds+'|'+SLOTS[i].key;
+  if(cur.full.has(k))cur.full.delete(k); else cur.full.add(k);
+  render(); renderSheet();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&sheetDs)closeSheet(); });
 
 /* ---- 変更あり？ ---- */
 function eqSet(a,b){ if(a.size!==b.size)return false; for(const x of a)if(!b.has(x))return false; return true; }
-function isDirty(){ return !eqSet(cur.closed,saved.closed)||!eqSet(cur.open,saved.open); }
+function isDirty(){ return !eqSet(cur.closed,saved.closed)||!eqSet(cur.open,saved.open)||!eqSet(cur.full,saved.full); }
 
 function updateSaveBar(){
   const st=document.getElementById('saveStatus');
@@ -343,11 +465,14 @@ function updateSaveBar(){
     saved.closed.forEach(d=>{if(!cur.closed.has(d))del++;});
     cur.open.forEach(d=>{if(!saved.open.has(d))add++;});
     saved.open.forEach(d=>{if(!cur.open.has(d))del++;});
+    cur.full.forEach(d=>{if(!saved.full.has(d))add++;});
+    saved.full.forEach(d=>{if(!cur.full.has(d))del++;});
     st.innerHTML=`<b>未保存の変更があります</b>（追加 ${add} / 取消 ${del}）`;
     btn.disabled=false; btn.classList.add('dirty');
   }else{
     const c=saved.closed.size, o=saved.open.size;
-    st.textContent=`保存済み — 臨時休業 ${c}日 / 特別営業 ${o}日`;
+    const today=todayStr(); let f=0; saved.full.forEach(x=>{ if(x.slice(0,10)>=today)f++; });
+    st.textContent=`保存済み — 臨時休業 ${c}日 / 特別営業 ${o}日 / 満席枠 ${f}`;
     btn.disabled=true; btn.classList.remove('dirty');
   }
 }
@@ -357,15 +482,18 @@ async function save(){
   if(!db){ toast('Firebase未接続','err'); return; }
   if(!isDirty()){ return; }
   const btn=document.getElementById('saveBtn'); btn.disabled=true;
+  // 過去日の満席設定は持ち越さない
+  cur.full=new Set([...cur.full].filter(x=>x.slice(0,10)>=todayStr()));
   const payload={
     closedDates:[...cur.closed].sort(),
     openDates:[...cur.open].sort(),
+    fullSlots:fullToObj(cur.full),
     updatedAt:Date.now()
   };
   try{
     await db.ref(DB_PATH).set(payload);
     // savedはFirebaseの購読で更新されるが、即時反映もしておく
-    saved.closed=new Set(cur.closed); saved.open=new Set(cur.open);
+    saved.closed=new Set(cur.closed); saved.open=new Set(cur.open); saved.full=new Set(cur.full);
     updateSaveBar();
     toast('保存しました。予約サイトに反映されます','ok');
   }catch(e){
