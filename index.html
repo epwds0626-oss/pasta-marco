@@ -146,6 +146,8 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 .ttext{font-family:var(--ns);font-weight:200;font-size:13px;color:var(--ink);flex:1}
 .tbadge{font-family:var(--cg);font-size:10px;font-weight:300;letter-spacing:.22em;padding:3px 10px;border:1px solid}
 .tb-open{color:var(--olive);border-color:#b8cd80}.tb-few{color:#8a6a18;border-color:#c8aa58}.tb-full{color:#903838;border-color:#d09090}
+.topt.is-off{background:#f6f4ef;pointer-events:none}
+.topt.is-off .ttext{color:rgba(17,16,9,.35)}
 .tb-closed{color:rgba(17,16,9,.28);border-color:var(--cream)}.tb-load{color:rgba(17,16,9,.28);border-color:var(--cream);animation:pulse 1.5s infinite}
 .res-note{padding:18px 22px;border-left:2px solid var(--olive);background:var(--cream);font-size:12px;line-height:2;color:rgba(17,16,9,.5);margin-bottom:8px}
 .park-note{padding:20px 22px;border:1px solid var(--olive);border-radius:4px;background:#fbf9f4;margin-bottom:16px}
@@ -826,6 +828,7 @@ const CAL_CONFIG = {
   fetch(FB_URL, {cache:'no-store'})
     .then(r=> r.ok ? r.json() : null)
     .then(data=>{
+      if(data && data.fullSlots && typeof data.fullSlots==='object') window.MARCO_FULL_SLOTS = data.fullSlots;
       if(data && (Array.isArray(data.closedDates) || Array.isArray(data.openDates))){
         if(Array.isArray(data.closedDates)) closedDates = data.closedDates;
         if(Array.isArray(data.openDates))   openDates   = data.openDates;
@@ -1046,6 +1049,31 @@ dmask.addEventListener('click',closeDrawer);
 const GAS='https://script.google.com/macros/s/AKfycbyyPLz-i2uC2TTxH-K4zrDU20NVFgEgQD-q2pQjSNt7fUnnj3kIHBc2Cn5DPAZ6PMCsOg/exec';
 
 const SLOT_KEYS = ['11:00〜12:30','13:00〜14:30','15:00〜16:00'];
+
+// 管理画面で「満席」にした枠 { 'YYYY-MM-DD': ['13:00〜14:30', ...] }
+window.MARCO_FULL_SLOTS = window.MARCO_FULL_SLOTS || {};
+const FB_CAL_URL='https://fishhack-74de3-default-rtdb.asia-southeast1.firebasedatabase.app/marco/calendar.json';
+function isManualFull(date, slotKey){
+  const a = window.MARCO_FULL_SLOTS && window.MARCO_FULL_SLOTS[date];
+  return Array.isArray(a) && a.includes(slotKey);
+}
+// 最新の満席設定を取り直す（失敗しても手元の値で続行）
+function refreshFullSlots(){
+  return fetch(FB_CAL_URL,{cache:'no-store'})
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{ if(d) window.MARCO_FULL_SLOTS = (d.fullSlots && typeof d.fullSlots==='object') ? d.fullSlots : {}; })
+    .catch(()=>{});
+}
+// 枠の表示を反映。満席・受付終了・休業日は選べないようにする
+function paintSlot(badge, label){
+  const[cls,txt]=vcInfo(label);
+  badge.className='tbadge '+cls;
+  badge.textContent=txt;
+  const row=badge.closest('.topt'), inp=row&&row.querySelector('input');
+  const off = label!=='受付中' && label!=='空席わずか';
+  if(row) row.classList.toggle('is-off', off);
+  if(inp){ inp.disabled=off; if(off && inp.checked) inp.checked=false; }
+}
 function vcInfo(label){
   return({
     '受付中':  ['tb-open','空席あり'],
@@ -1059,14 +1087,19 @@ function loadVac(d){
   const cb='vc'+Date.now();
   const sc=document.createElement('script');
   sc.src=`${GAS}?action=status&date=${d}&callback=${cb}`;
+  // 選び直しの間は一旦すべて解除
+  document.querySelectorAll('.topt').forEach(r=>{ r.classList.remove('is-off'); const i=r.querySelector('input'); if(i) i.disabled=false; });
+  const manualReady = refreshFullSlots();
   window[cb]=data=>{
-    document.querySelectorAll('[data-slot]').forEach(b=>{
-      const slotKey = SLOT_KEYS[Number(b.dataset.slot)-1];
-      const slotData = data.slots && slotKey && data.slots[slotKey];
-      const label = slotData ? slotData.label : '受付終了';
-      const[cls,txt]=vcInfo(label);
-      b.className='tbadge '+cls;
-      b.textContent=txt;
+    manualReady.then(()=>{
+      document.querySelectorAll('[data-slot]').forEach(b=>{
+        const slotKey = SLOT_KEYS[Number(b.dataset.slot)-1];
+        const slotData = data.slots && slotKey && data.slots[slotKey];
+        let label = slotData ? slotData.label : '受付終了';
+        // 管理画面の満席指定は「受付中/わずか」のときだけ上書き（休業日・受付終了はそのまま）
+        if((label==='受付中'||label==='空席わずか') && isManualFull(d, slotKey)) label='満席';
+        paintSlot(b, label);
+      });
     });
     document.body.removeChild(sc);
     delete window[cb];
@@ -1139,7 +1172,17 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
 
   btn.disabled=true; msg.textContent='空席を確認中…'; msg.className='rmsg';
 
-  // 送信直前チェック: 選択枠が今も空いているか
+  // 送信直前チェック①: 管理画面で満席にされていないか（最新を取り直す）
+  await refreshFullSlots();
+  if(isManualFull(date, time_slot)){
+    msg.textContent='この時間は満席になりました。別の時間をお選びください。';
+    msg.className='rmsg ng';
+    btn.disabled=false;
+    loadVac(date);
+    return;
+  }
+
+  // 送信直前チェック②: 選択枠が今も空いているか
   const st = await fetchStatusOnce(date);
   if(st && st.slots && st.slots[time_slot]){
     if(st.slots[time_slot].formOpen === false){
