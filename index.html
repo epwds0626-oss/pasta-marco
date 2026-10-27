@@ -520,6 +520,18 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
       <div class="textra">
         <p style="font-size:15px;line-height:2.4;color:rgba(17,16,9,.68);margin-bottom:32px">最新の営業カレンダーや新メニュー情報をお届けします。</p>
 
+        <p class="photo-gallery-label" style="margin-top:0">Event</p>
+        <div class="news-event" data-until="2026-11-30T00:00:00+09:00" style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;margin-bottom:40px">
+          <img src="https://epwds0626-oss.github.io/pasta-marco/marco-1st-anniversary.png" alt="パスタのマルコ 1周年記念 11.28 SAT・11.29 SUN" loading="lazy" onclick="openLb(this.src,'1st Anniversary')" style="width:100%;max-width:360px;aspect-ratio:1/1;object-fit:cover;border:1px solid rgba(17,16,9,.08);box-shadow:0 2px 12px rgba(17,16,9,.06);cursor:pointer;display:block">
+          <div style="flex:1;min-width:240px">
+            <p style="font-family:var(--cg);font-size:13px;letter-spacing:.22em;color:rgba(17,16,9,.45);margin-bottom:6px">2026.11.28 SAT – 11.29 SUN</p>
+            <p style="font-size:18px;line-height:1.8;color:rgba(17,16,9,.85);margin-bottom:14px">1周年記念イベント</p>
+            <p style="font-size:15px;line-height:2.2;color:rgba(17,16,9,.68);margin-bottom:12px">おかげさまで、パスタのマルコは1周年を迎えます。感謝を込めて、2日間限定で記念パスタ3種・ピッツァ2種を各¥1,000（税別）でご用意しました。</p>
+            <p style="font-size:14px;line-height:2.1;color:rgba(17,16,9,.6);margin-bottom:12px">記念パスタ：浜のペスカトーレ／常陸牛のラグー／大洗産釜揚げしらすのカーチョエペペ<br>ピッツァ：浜のピッツァ／釜揚げシラスのジェノヴェーゼ</p>
+            <p style="font-size:14px;line-height:2.1;color:rgba(17,16,9,.6)">11:00 OPEN – 15:30 CLOSE<br>サラダバー・ドリンクバーはお好みで（通常料金）。アラカルト・アルコールもございます。<br><span style="color:#b5452f">※当日のご予約はお受けしておりません。</span></p>
+          </div>
+        </div>
+
         <p class="photo-gallery-label" style="margin-top:0">営業カレンダー</p>
         <div class="cal3 cal3-view" id="calNews" style="margin-bottom:14px"></div>
         <div class="cal3-legend" style="margin-bottom:32px">
@@ -1223,6 +1235,19 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
   }
   btn.disabled=false;
 });
+</script>
+<script>
+// 期限切れの告知を自動で非表示（data-until を過ぎたら非表示。日本時間で判定）
+(function(){
+  document.querySelectorAll('[data-until]').forEach(function(el){
+    var t=Date.parse(el.getAttribute('data-until'));
+    if(!isNaN(t)&&Date.now()>=t){
+      var lbl=el.previousElementSibling;
+      if(lbl&&lbl.classList.contains('photo-gallery-label'))lbl.style.display='none';
+      el.style.display='none';
+    }
+  });
+})();
 </script>
 </body>
 </html>
