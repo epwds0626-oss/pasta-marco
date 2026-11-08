@@ -153,6 +153,8 @@ var MARCO_SEATING = (function () {
     MAX_ONLINE_PARTY: MAX_ONLINE_PARTY,
     canAccept: canAccept,
     slotStatus: slotStatus,
+    // その日・その枠が、決まりで自動的に満席か（管理画面の表示用）
+    isAlwaysFullOn: function (slotKey, dateStr) { var s = findSlot(slotKey); return !!s && isAlwaysFull(s, dateStr); },
     partySizeFromText: partySizeFromText,
     fits: function (slotKey, sizes) { var s = findSlot(slotKey); return !!s && fits(s, sizes); }
   };
