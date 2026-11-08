@@ -147,6 +147,7 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
 .tbadge{font-family:var(--cg);font-size:10px;font-weight:300;letter-spacing:.22em;padding:3px 10px;border:1px solid}
 .tb-open{color:var(--olive);border-color:#b8cd80}.tb-few{color:#8a6a18;border-color:#c8aa58}.tb-full{color:#903838;border-color:#d09090}
 .topt.is-off{background:#f6f4ef;pointer-events:none}
+.rgroup{font-size:13px;color:#903838;margin:0 0 8px}.rgroup a{color:inherit;text-decoration:underline}
 .topt.is-off .ttext{color:rgba(17,16,9,.35)}
 .tb-closed{color:rgba(17,16,9,.28);border-color:var(--cream)}.tb-load{color:rgba(17,16,9,.28);border-color:var(--cream);animation:pulse 1.5s infinite}
 .res-note{padding:18px 22px;border-left:2px solid var(--olive);background:var(--cream);font-size:12px;line-height:2;color:rgba(17,16,9,.5);margin-bottom:8px}
@@ -654,18 +655,20 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
             <input type="hidden" id="rDate">
           </div>
 
-          <div class="rf full"><label class="rl">予約時間<em>必須</em></label>
-            <div class="topts">
-              <label class="topt"><input type="radio" name="rt" value="11:00〜12:30　枠1"><span class="tdot"></span><span class="ttext">11:00 <small>ご来店</small> — 12:30 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
-              <label class="topt"><input type="radio" name="rt" value="13:00〜14:30　枠2"><span class="tdot"></span><span class="ttext">13:00 <small>ご来店</small> — 14:30 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
-              <label class="topt"><input type="radio" name="rt" value="15:00〜16:00　枠3"><span class="tdot"></span><span class="ttext">15:00 <small>ご来店</small> — 16:00 <small>ご利用最終</small></span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
-            </div>
-          </div>
           <div class="rf"><label class="rl">大人の人数<em>必須</em></label>
             <select class="rs" id="rAdults"><option value="">— 選択 —</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名</option><option>6名</option><option>7名</option><option>8名</option></select>
           </div>
           <div class="rf"><label class="rl">小人（お子様）の人数</label>
             <select class="rs" id="rChildren"><option>0名</option><option>1名</option><option>2名</option><option>3名</option><option>4名</option><option>5名</option><option>6名</option></select>
+          </div>
+          <div class="rf full"><label class="rl">予約時間<em>必須</em></label>
+            <p class="rgroup" id="rGroupNote" style="display:none">9名様以上のご予約は、<a href="mailto:epw.ds0626@gmail.com?subject=【パスタのマルコ】団体予約のお問い合わせ">メールでお問い合わせ</a>ください。</p>
+            <div class="topts">
+              <label class="topt"><input type="radio" name="rt" value="11:00〜12:20　枠1"><span class="tdot"></span><span class="ttext">11:00 <small>ご来店</small> — 12:20 <small>ご退店</small></span><span class="tbadge tb-load" data-slot="1">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="12:30〜13:50　枠2"><span class="tdot"></span><span class="ttext">12:30 <small>ご来店</small> — 13:50 <small>ご退店</small></span><span class="tbadge tb-load" data-slot="2">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="14:00〜15:20　枠3"><span class="tdot"></span><span class="ttext">14:00 <small>ご来店</small> — 15:20 <small>ご退店</small></span><span class="tbadge tb-load" data-slot="3">確認中</span></label>
+              <label class="topt"><input type="radio" name="rt" value="14:30〜15:50　枠4"><span class="tdot"></span><span class="ttext">14:30 <small>ご来店</small> — 15:50 <small>ご退店</small></span><span class="tbadge tb-load" data-slot="4">確認中</span></label>
+            </div>
           </div>
           <div class="rf"><label class="rl">備考</label><textarea class="rt" id="rNotes" placeholder="アレルギー / 席の希望など"></textarea></div>
           <button class="rsub" id="rSubmit">予約を送信する（自動確定）</button>
@@ -705,6 +708,7 @@ body{font-family:var(--ns);font-weight:200;background:var(--sea);color:var(--w);
   <div class="sfooter"><div class="sfooter-links"><a href="https://www.enya-otd.com/" target="_blank" rel="noopener">えんやどっと丸</a><a href="https://epwds0626-oss.github.io/fish-hack/" target="_blank" rel="noopener">Fish Hack</a><a href="https://epwds0626-oss.github.io/onetable-design/" target="_blank" rel="noopener">One Table Design</a></div><span class="sfooter-c">© 2025 Pasta Marco</span></div>
 </div>
 
+<script src="marco-seating.js"></script>
 <script>
 // =====================================================
 // カスタムカレンダー設定
@@ -1060,14 +1064,16 @@ dmask.addEventListener('click',closeDrawer);
 // =====================================================
 const GAS='https://script.google.com/macros/s/AKfycbyyPLz-i2uC2TTxH-K4zrDU20NVFgEgQD-q2pQjSNt7fUnnj3kIHBc2Cn5DPAZ6PMCsOg/exec';
 
-const SLOT_KEYS = ['11:00〜12:30','13:00〜14:30','15:00〜16:00'];
+const SLOT_KEYS = ['11:00〜12:20','12:30〜13:50','14:00〜15:20','14:30〜15:50'];
 
 // 管理画面で「満席」にした枠 { 'YYYY-MM-DD': ['13:00〜14:30', ...] }
 window.MARCO_FULL_SLOTS = window.MARCO_FULL_SLOTS || {};
 const FB_CAL_URL='https://fishhack-74de3-default-rtdb.asia-southeast1.firebasedatabase.app/marco/calendar.json';
+// 以前の枠名で保存された満席設定も、新しい枠に読み替える
+const LEGACY_SLOT_MAP = {'11:00〜12:30':'11:00〜12:20','13:00〜14:30':'12:30〜13:50','15:00〜16:00':'14:30〜15:50'};
 function isManualFull(date, slotKey){
   const a = window.MARCO_FULL_SLOTS && window.MARCO_FULL_SLOTS[date];
-  return Array.isArray(a) && a.includes(slotKey);
+  return Array.isArray(a) && a.some(k => (LEGACY_SLOT_MAP[k]||k) === slotKey);
 }
 // 最新の満席設定を取り直す（失敗しても手元の値で続行）
 function refreshFullSlots(){
@@ -1095,6 +1101,40 @@ function vcInfo(label){
     '休業日':  ['tb-closed','休業日']
   }[label])||['tb-closed','受付終了'];
 }
+// 選んでいる人数（大人＋お子様）
+function partyTotal(){
+  const a=parseInt(document.getElementById('rAdults').value,10)||0;
+  const c=parseInt(document.getElementById('rChildren').value,10)||0;
+  return a+c;
+}
+const MAX_ONLINE_PARTY = (window.MARCO_SEATING && MARCO_SEATING.MAX_ONLINE_PARTY) || 8;
+let lastVac = null;   // { date, slots }
+// 人数に合わせて各枠の表示を塗り直す
+function paintVac(){
+  const g=document.getElementById('rGroupNote');
+  const n=partyTotal();
+  if(g) g.style.display = n>MAX_ONLINE_PARTY ? '' : 'none';
+  if(!lastVac) return;
+  const d=lastVac.date;
+  document.querySelectorAll('[data-slot]').forEach(b=>{
+    const slotKey = SLOT_KEYS[Number(b.dataset.slot)-1];
+    const slotData = lastVac.slots && slotKey && lastVac.slots[slotKey];
+    let label = slotData ? slotData.label : '受付終了';
+    // 席割り当て判定（fitBySize）があれば、選んだ人数で入れるかを見る
+    // （満席→空席への格上げはしない。GASが満席と言えば満席）
+    if(slotData && Array.isArray(slotData.fitBySize) && (label==='受付中'||label==='空席わずか')){
+      if(n>MAX_ONLINE_PARTY) label='満席';
+      else if(n>0) label = slotData.fitBySize[n-1] ? (slotData.fitBySize[Math.min(n+1,MAX_ONLINE_PARTY)-1] ? '受付中' : '空席わずか') : '満席';
+    }
+    // 土日祝の12:30枠などWeb予約を受けない枠（GAS未対応でも表示は満席に）
+    if((label==='受付中'||label==='空席わずか') && window.MARCO_SEATING && !MARCO_SEATING.canAccept(slotKey, [], 1, d).ok){
+      label='満席';
+    }
+    // 管理画面の満席指定は「受付中/わずか」のときだけ上書き（休業日・受付終了はそのまま）
+    if((label==='受付中'||label==='空席わずか') && isManualFull(d, slotKey)) label='満席';
+    paintSlot(b, label);
+  });
+}
 function loadVac(d){
   const cb='vc'+Date.now();
   const sc=document.createElement('script');
@@ -1104,20 +1144,15 @@ function loadVac(d){
   const manualReady = refreshFullSlots();
   window[cb]=data=>{
     manualReady.then(()=>{
-      document.querySelectorAll('[data-slot]').forEach(b=>{
-        const slotKey = SLOT_KEYS[Number(b.dataset.slot)-1];
-        const slotData = data.slots && slotKey && data.slots[slotKey];
-        let label = slotData ? slotData.label : '受付終了';
-        // 管理画面の満席指定は「受付中/わずか」のときだけ上書き（休業日・受付終了はそのまま）
-        if((label==='受付中'||label==='空席わずか') && isManualFull(d, slotKey)) label='満席';
-        paintSlot(b, label);
-      });
+      lastVac = { date:d, slots:(data && data.slots) || {} };
+      paintVac();
     });
     document.body.removeChild(sc);
     delete window[cb];
   };
   document.body.appendChild(sc);
 }
+['rAdults','rChildren'].forEach(id=>document.getElementById(id).addEventListener('change', paintVac));
 
 // NGコード → 画面メッセージ
 function reserveNgMessage(code){
@@ -1129,6 +1164,8 @@ function reserveNgMessage(code){
       return '当日のご予約受付は終了しました（10:30まで）。';
     case 'closed':
       return 'その日は休業日です。別の日をお選びください。';
+    case 'group':
+      return '9名様以上のご予約は、メールでお問い合わせください。';
     case 'missing':
       return '必須項目をすべて入力してください。';
     default:
@@ -1181,6 +1218,10 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
   if(!name||!phone||!email||!date||!time_slot||!adults){
     msg.textContent='必須項目をすべて入力してください。'; msg.className='rmsg ng'; return;
   }
+  const total = partyTotal();
+  if(total>MAX_ONLINE_PARTY){
+    msg.textContent=reserveNgMessage('group'); msg.className='rmsg ng'; return;
+  }
 
   btn.disabled=true; msg.textContent='空席を確認中…'; msg.className='rmsg';
 
@@ -1197,7 +1238,8 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
   // 送信直前チェック②: 選択枠が今も空いているか
   const st = await fetchStatusOnce(date);
   if(st && st.slots && st.slots[time_slot]){
-    if(st.slots[time_slot].formOpen === false){
+    const fb = st.slots[time_slot].fitBySize;
+    if(st.slots[time_slot].formOpen === false || (Array.isArray(fb) && !fb[total-1])){
       msg.textContent='この時間は満席になりました。別の時間をお選びください。';
       msg.className='rmsg ng';
       btn.disabled=false;
@@ -1213,6 +1255,7 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
     name, email, phone, date,
     time_slot,
     party_size: guests,
+    party_total: total,
     notes
   });
 
@@ -1225,6 +1268,7 @@ document.getElementById('rSubmit').addEventListener('click', async ()=>{
     document.getElementById('rChildren').value='0名';
     document.querySelectorAll('input[name="rt"]').forEach(r=>r.checked=false);
     document.querySelectorAll('[data-slot]').forEach(b=>{b.textContent='確認中';b.className='tbadge tb-load'});
+    lastVac = null;
     if(window.marcoCalReset) window.marcoCalReset();
   }else{
     msg.textContent = reserveNgMessage(res && res.code);
