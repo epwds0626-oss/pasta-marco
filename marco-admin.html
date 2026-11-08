@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="marco-seating.js"></script>
 <style>
 /* =========================================================
    パスタのマルコ 休業日管理（社内用）
@@ -135,6 +136,7 @@ header{background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:40
 .sw::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
 .sw.on::after{transform:translateX(22px)}
 .sw.on.k-full{background:var(--full)}
+.sw:disabled{opacity:.55;cursor:not-allowed}
 .sw.on.k-closed{background:var(--closed)}
 .sw.on.k-open{background:var(--open)}
 .sh-note{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;line-height:1.8}
@@ -425,6 +427,13 @@ function renderSheet(){
   if(open){
     h+='<div class="sh-sec">時間枠（Web予約を止める）</div><div class="rows">';
     SLOTS.forEach((s,i)=>{
+      // 土日祝の12:30枠など、決まりで自動的に満席になる枠は切り替えられない
+      const auto = !!(window.MARCO_SEATING && MARCO_SEATING.isAlwaysFullOn && MARCO_SEATING.isAlwaysFullOn(s.key, ds));
+      if(auto){
+        h+=`<div class="row on-full"><div class="lab">${s.label}　<b style="color:var(--full)">自動で満席（土日祝）</b><small>${s.sub}</small></div>
+            <button class="sw k-full on" disabled aria-pressed="true" title="土日祝は自動で満席になります"></button></div>`;
+        return;
+      }
       const on=cur.full.has(ds+'|'+s.key);
       h+=`<div class="row ${on?'on-full':''}"><div class="lab">${s.label}　${on?'<b style="color:var(--full)">満席表示中</b>':''}<small>${s.sub}</small></div>
           <button class="sw k-full ${on?'on':''}" onclick="toggleSlot(${i})" aria-pressed="${on}"></button></div>`;
